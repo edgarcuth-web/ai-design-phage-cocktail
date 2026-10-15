@@ -35,3 +35,6 @@ data/processed/*
 # Model artifacts
 models/
 artifacts/
+
+# External reference repositories
+external/
