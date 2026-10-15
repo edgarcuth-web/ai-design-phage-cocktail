@@ -91,6 +91,27 @@ The split is 70%/15%/15% by bacterial strain, so no target strain is shared
 between train, validation, and test. Benchmark results and interpretation are
 recorded in docs/step2_benchmark.md.
 
+## Step 3A: reproduce a genome-aware reference
+
+Before building our own genome model, reproduce GenoPHI's official 25-strain x
+25-phage protein-family demo. This verifies the complete path from protein
+FASTA files through MMseqs2-derived features to strain-separated prediction.
+
+On Linux/macOS, or inside WSL2 on Windows:
+
+~~~bash
+conda env create -f environment.yml
+conda activate phage-cocktail
+
+python scripts/bootstrap_genophi_demo.py
+python scripts/run_genophi_reference.py
+python scripts/summarize_genophi_reference.py
+~~~
+
+GenoPHI is pinned to version 1.0.3 and its demo data are pinned to commit
+f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f. Details are in
+docs/step3_genophi_reference.md.
+
 The pinned matrix contains 16,638 interactions across 177 bacterial strains and
 94 phages, with a 22.9% positive interaction rate. See data/README.md for
 provenance.
@@ -103,7 +124,9 @@ provenance.
 - [x] Explore class balance and matrix coverage
 - [x] Define leakage-safe held-out-strain train/validation/test splitting
 - [x] Establish host-agnostic pairwise and broadest-cocktail baselines
-- [ ] Train a host-aware single-phage model
+- [x] Wire in the official GenoPHI genome-aware reference workflow
+- [ ] Reproduce GenoPHI demo metrics locally
+- [ ] Train our own host-aware single-phage model on the fixed benchmark
 - [ ] Calibrate pairwise infection probabilities
 - [ ] Evaluate cocktails on unseen bacterial strains
 - [ ] Compare against stronger phage-host prediction baselines
