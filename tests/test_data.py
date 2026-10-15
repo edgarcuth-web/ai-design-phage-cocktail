@@ -20,6 +20,22 @@ def test_load_interactions_accepts_binary_table(tmp_path):
     assert len(frame) == 3
 
 
+def test_load_interactions_normalizes_genophi_columns(tmp_path):
+    path = tmp_path / "genophi.csv"
+    pd.DataFrame(
+        {
+            "strain": ["B1", "B1", "B2"],
+            "phage": ["P1", "P2", "P1"],
+            "interaction": [1, 0, 0],
+        }
+    ).to_csv(path, index=False)
+
+    frame = load_interactions(path)
+
+    assert list(frame.columns) == ["bacterium", "phage", "infection"]
+    assert frame["infection"].tolist() == [1, 0, 0]
+
+
 def test_load_interactions_rejects_nonbinary_labels(tmp_path):
     path = tmp_path / "interactions.csv"
     pd.DataFrame(
@@ -31,4 +47,18 @@ def test_load_interactions_rejects_nonbinary_labels(tmp_path):
     ).to_csv(path, index=False)
 
     with pytest.raises(ValueError, match="binary"):
+        load_interactions(path)
+
+
+def test_load_interactions_rejects_duplicate_pairs(tmp_path):
+    path = tmp_path / "interactions.csv"
+    pd.DataFrame(
+        {
+            "bacterium": ["B1", "B1"],
+            "phage": ["P1", "P1"],
+            "infection": [1, 1],
+        }
+    ).to_csv(path, index=False)
+
+    with pytest.raises(ValueError, match="duplicate"):
         load_interactions(path)
