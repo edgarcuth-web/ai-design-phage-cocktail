@@ -1,0 +1,10 @@
+name: phage-cocktail
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - mmseqs2
+  - pip
+  - pip:
+      - -e .[dev,reference]
