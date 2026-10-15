@@ -38,7 +38,7 @@ def validate_interactions(frame: pd.DataFrame) -> pd.DataFrame:
         names = ", ".join(sorted(missing))
         raise ValueError(f"missing required columns: {names}")
 
-    required = frame.loc[:, REQUIRED_COLUMNS]
+    required = frame.loc[:, list(REQUIRED_COLUMNS)]
     if required.isna().any().any():
         raise ValueError("required interaction fields cannot contain missing values")
 
