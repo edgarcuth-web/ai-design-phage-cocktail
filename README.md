@@ -73,6 +73,24 @@ For interactive exploration, open:
 notebooks/01_explore_interactions.ipynb
 ~~~
 
+## Step 2: leakage-safe benchmark
+
+Run the fixed held-out-strain benchmark:
+
+~~~bash
+python scripts/run_benchmarks.py
+~~~
+
+Or open:
+
+~~~text
+notebooks/02_leakage_safe_benchmark.ipynb
+~~~
+
+The split is 70%/15%/15% by bacterial strain, so no target strain is shared
+between train, validation, and test. Benchmark results and interpretation are
+recorded in docs/step2_benchmark.md.
+
 The pinned matrix contains 16,638 interactions across 177 bacterial strains and
 94 phages, with a 22.9% positive interaction rate. See data/README.md for
 provenance.
@@ -83,8 +101,9 @@ provenance.
 - [x] Implement a naive independence-based cocktail baseline
 - [x] Import a reproducible public phage-host interaction dataset
 - [x] Explore class balance and matrix coverage
-- [ ] Define leakage-safe held-out-strain train/test splitting
-- [ ] Train a single-phage baseline
+- [x] Define leakage-safe held-out-strain train/validation/test splitting
+- [x] Establish host-agnostic pairwise and broadest-cocktail baselines
+- [ ] Train a host-aware single-phage model
 - [ ] Calibrate pairwise infection probabilities
 - [ ] Evaluate cocktails on unseen bacterial strains
 - [ ] Compare against stronger phage-host prediction baselines
