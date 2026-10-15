@@ -1,26 +1,64 @@
-"""Utilities for loading pairwise phage-host interaction tables."""
+"""Utilities for loading and validating phage-host interaction tables."""
 
 from pathlib import Path
 
 import pandas as pd
 
-REQUIRED_COLUMNS = {"bacterium", "phage", "infection"}
+REQUIRED_COLUMNS = ("bacterium", "phage", "infection")
+COLUMN_ALIASES = {
+    "strain": "bacterium",
+    "interaction": "infection",
+}
 
 
-def load_interactions(path: str | Path) -> pd.DataFrame:
-    """Load and validate a CSV interaction table."""
-    frame = pd.read_csv(path)
+def normalize_interaction_columns(frame: pd.DataFrame) -> pd.DataFrame:
+    """Return a copy with common external column names mapped to our schema.
 
-    missing = REQUIRED_COLUMNS.difference(frame.columns)
+    GenoPHI uses strain, phage, interaction while this project internally uses
+    bacterium, phage, infection.
+    """
+    frame = frame.copy()
+    rename: dict[str, str] = {}
+
+    for source, target in COLUMN_ALIASES.items():
+        if source in frame.columns:
+            if target in frame.columns:
+                raise ValueError(
+                    f"ambiguous columns: both {source!r} and {target!r} are present"
+                )
+            rename[source] = target
+
+    return frame.rename(columns=rename)
+
+
+def validate_interactions(frame: pd.DataFrame) -> pd.DataFrame:
+    """Validate a canonical interaction table and return it unchanged."""
+    missing = set(REQUIRED_COLUMNS).difference(frame.columns)
     if missing:
         names = ", ".join(sorted(missing))
         raise ValueError(f"missing required columns: {names}")
 
-    if frame[list(REQUIRED_COLUMNS)].isna().any().any():
+    required = frame.loc[:, REQUIRED_COLUMNS]
+    if required.isna().any().any():
         raise ValueError("required interaction fields cannot contain missing values")
 
-    labels = set(frame["infection"].unique())
+    for column in ("bacterium", "phage"):
+        if required[column].astype(str).str.strip().eq("").any():
+            raise ValueError(f"{column} identifiers cannot be empty")
+
+    labels = set(required["infection"].unique())
     if not labels.issubset({0, 1}):
         raise ValueError("infection labels must be binary (0 or 1)")
 
+    duplicated = required.duplicated(subset=["bacterium", "phage"], keep=False)
+    if duplicated.any():
+        raise ValueError("duplicate bacterium-phage pairs are not allowed")
+
     return frame
+
+
+def load_interactions(path: str | Path) -> pd.DataFrame:
+    """Load a CSV interaction table, normalize aliases, and validate it."""
+    frame = pd.read_csv(path)
+    frame = normalize_interaction_columns(frame)
+    return validate_interactions(frame)
