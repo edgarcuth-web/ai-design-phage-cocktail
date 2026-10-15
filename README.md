@@ -58,12 +58,32 @@ pip install -e ".[dev]"
 pytest
 ```
 
+## Step 1: fetch and inspect the first dataset
+
+Download the pinned GenoPHI E. coli subset:
+
+~~~bash
+python scripts/fetch_genophi.py
+python scripts/explore_interactions.py
+~~~
+
+For interactive exploration, open:
+
+~~~text
+notebooks/01_explore_interactions.ipynb
+~~~
+
+The pinned matrix contains 16,638 interactions across 177 bacterial strains and
+94 phages, with a 22.9% positive interaction rate. See data/README.md for
+provenance.
+
 ## First milestones
 
 - [x] Create a reproducible Python project skeleton
 - [x] Implement a naive independence-based cocktail baseline
-- [ ] Import a small public phage-host interaction dataset
-- [ ] Explore class balance and train/test splitting
+- [x] Import a reproducible public phage-host interaction dataset
+- [x] Explore class balance and matrix coverage
+- [ ] Define leakage-safe held-out-strain train/test splitting
 - [ ] Train a single-phage baseline
 - [ ] Calibrate pairwise infection probabilities
 - [ ] Evaluate cocktails on unseen bacterial strains
