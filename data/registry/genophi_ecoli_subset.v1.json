@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "dataset_id": "genophi-ecoli-subset",
+  "version": "upstream-commit:f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f",
+  "source": {
+    "project": "GenoPHI",
+    "repository_url": "https://github.com/Noonanav/GenoPHI",
+    "revision": "f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f",
+    "source_path": "data/interaction_matrices/ecoli_interaction_matrix_subset.csv",
+    "download_url": "https://raw.githubusercontent.com/Noonanav/GenoPHI/f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f/data/interaction_matrices/ecoli_interaction_matrix_subset.csv",
+    "citation": "Noonan AJC et al. Phylogeny-agnostic strain-level prediction of phage-host interactions from genomes using machine learning. Nature Microbiology (2026)."
+  },
+  "local_path": "data/raw/genophi_ecoli_subset.csv",
+  "sha256": "9a7caa8c48d475a2d0fa153ae61dab3b3484be8c266b0ef965f171218606a6e6",
+  "license_status": "not_verified",
+  "column_mapping": {
+    "strain": "bacterium",
+    "phage": "phage",
+    "interaction": "infection"
+  },
+  "label_semantics": {
+    "source_column": "interaction",
+    "positive_value": 1,
+    "positive_meaning": "Source-encoded interaction-positive observation.",
+    "negative_value": 0,
+    "negative_meaning": "Source-encoded interaction-negative observation.",
+    "operational_definition_status": "not_verified",
+    "operational_definition": "The exact assay protocol and decision rule for this subset have not yet been independently verified in this repository. Preserve source labels without reinterpreting them.",
+    "missing_pair_semantics": "unknown_not_negative",
+    "model_target_mapping_status": "not_verified",
+    "model_target_mapping_note": "Do not use this label as a direct target for adsorption, productive infection, or resistance emergence until the source phenotype definition and assay mapping are verified."
+  },
+  "expected_summary": {
+    "interactions": 16638,
+    "bacteria": 177,
+    "phages": 94,
+    "positive": 3813,
+    "negative": 12825
+  }
+}
