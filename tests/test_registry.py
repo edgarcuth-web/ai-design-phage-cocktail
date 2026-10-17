@@ -1,5 +1,6 @@
 import hashlib
 import json
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -106,7 +107,7 @@ def test_verify_registered_dataset_rejects_hash_mismatch(tmp_path):
 
 def test_verify_registered_dataset_rejects_summary_mismatch(tmp_path):
     manifest_path, _, manifest = _write_fixture(tmp_path)
-    manifest["expected_summary"]["interactions"] = 99
+    manifest["expected_summary"]["bacteria"] = 99
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
     with pytest.raises(ValueError, match="summary mismatch"):
@@ -120,3 +121,18 @@ def test_manifest_rejects_implicit_negative_missing_pair_semantics(tmp_path):
 
     with pytest.raises(ValueError, match="unknown_not_negative"):
         load_dataset_manifest(manifest_path)
+
+
+def test_checked_in_genophi_manifest_is_versioned_and_pinned():
+    manifest_path = (
+        Path(__file__).resolve().parents[1]
+        / "data/registry/genophi_ecoli_subset.v1.json"
+    )
+
+    manifest = load_dataset_manifest(manifest_path)
+
+    assert manifest["dataset_id"] == "genophi-ecoli-subset"
+    assert manifest["source"]["revision"] == REVISION
+    assert len(manifest["sha256"]) == 64
+    assert manifest["expected_summary"]["interactions"] == 16638
+    assert manifest["label_semantics"]["model_target_mapping_status"] == "not_verified"
