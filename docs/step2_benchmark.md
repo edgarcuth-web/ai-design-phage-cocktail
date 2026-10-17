@@ -1,7 +1,8 @@
 # Step 2 benchmark
 
 This benchmark uses the pinned GenoPHI E. coli interaction matrix and a
-deterministic bacterial-strain split with seed 42.
+deterministic bacterial-strain split with seed 42. The dataset checksum and
+expected summary are verified against the registry before the benchmark runs.
 
 ## Split
 
@@ -11,7 +12,10 @@ deterministic bacterial-strain split with seed 42.
 | Validation | 27 | 2,538 | 18.72% |
 | Test | 26 | 2,444 | 26.23% |
 
-No bacterial strain occurs in more than one partition.
+No bacterial strain occurs in more than one partition. The split holds out
+strains, not phage identities: phages may occur in both train and test. Results
+therefore measure generalization to unseen strains for phages that may be known
+during training, not cold-start generalization to unseen phages.
 
 ## Pairwise baselines on test strains
 
@@ -42,9 +46,15 @@ Phages are ranked using training strains only.
 
 The independence formula becomes extremely optimistic for k=3 and k=4:
 adding additional broad phages raises the mathematical independence estimate
-while producing no additional test-strain coverage. This is direct evidence
-that cocktail design must account for redundant host ranges and dependencies.
+while producing no additional test-strain coverage. This is evidence that
+cocktail design must account for redundant host ranges and dependencies.
+
+Coverage is calculated only when the test matrix has an explicit observed outcome
+for every selected-phage/held-out-strain pair. Missing pairs are unknown, not
+negative; evaluation fails closed rather than silently shrinking the denominator.
 
 These numbers are a fixed development benchmark, not a final estimate of model
-performance. Later evaluation should include repeated group splits or grouped
-cross-validation and confidence intervals.
+performance. The source label's exact assay definition and mapping to
+adsorption/productive-infection/resistance-emergence targets are not yet
+verified. Later evaluation should include repeated group splits, confidence
+intervals, and a separate unseen-phage protocol.
