@@ -1,15 +1,17 @@
 # Phage Cocktail Predictor
 
-Predict whether a bacteriophage or phage cocktail can successfully infect a bacterial strain, while making uncertainty explicit when the target bacterium is incompletely characterized.
+Research infrastructure for phage-host interaction prediction and phage-cocktail
+baselines. Dataset provenance, label semantics and evaluation boundaries are
+explicit; this repository does not establish clinical efficacy.
 
 ## MVP question
 
 Given a bacterial strain and a set of candidate phages:
 
-1. estimate pairwise infection probabilities for each phage-host pair;
+1. estimate pairwise interaction probabilities for explicitly defined targets;
 2. combine those probabilities into a simple cocktail baseline;
 3. evaluate on bacterial strains not seen during training;
-4. report calibrated uncertainty rather than only a binary prediction.
+4. report calibrated uncertainty only when supported by validation.
 
 The first cocktail baseline assumes independent phage action:
 
@@ -17,31 +19,38 @@ The first cocktail baseline assumes independent phage action:
 P(at least one phage infects) = 1 - product(1 - p_i)
 ```
 
-This is deliberately simple. Later versions can learn synergy, antagonism, shared receptors, bacterial defence systems, and other dependencies.
+This is deliberately simple. Real phages can share receptors, encounter the same
+bacterial defence systems, or otherwise have dependent outcomes.
 
 ## Repository layout
 
 ```text
 data/
-  raw/            # untouched source data
-  processed/      # cleaned/model-ready data
-notebooks/        # exploration and experiments
+  raw/              # downloaded source data; not committed
+  processed/        # cleaned/model-ready data; not committed
+  registry/         # versioned dataset manifests and label semantics
+notebooks/          # exploration and experiments
 src/phage_cocktail/
-  baseline.py     # simple cocktail probability baseline
-  data.py         # interaction-table loading/validation
-tests/            # automated tests
+  baseline.py       # simple cocktail probability baseline
+  data.py           # observed interaction-table loading/validation
+  registry.py       # dataset checksum and summary verification
+  split.py          # deterministic strain-level splits
+  benchmark.py      # leakage-guarded pairwise/cocktail baselines
+tests/              # automated tests
 ```
 
-## Expected interaction-table format
+## Dataset and labels
 
-```csv
-bacterium,phage,infection
-Ecoli_01,P001,1
-Ecoli_01,P002,0
-Ecoli_02,P001,0
-```
+The first dataset is the pinned GenoPHI E. coli subset. The fetch script verifies
+the registered SHA-256, and analysis scripts verify the checksum and summary
+statistics before use.
 
-`infection` must be 0 or 1.
+The canonical `infection` column currently represents the source-encoded binary
+interaction label. Its exact assay definition and mapping to adsorption,
+productive infection, or resistance-emergence targets are **not yet verified**.
+An absent pair is unknown/unobserved, not a negative label. See
+[`docs/dataset_contract.md`](docs/dataset_contract.md) and
+[`data/README.md`](data/README.md).
 
 ## Setup
 
@@ -58,79 +67,68 @@ pip install -e ".[dev]"
 pytest
 ```
 
-## Step 1: fetch and inspect the first dataset
+## Step 1: fetch and inspect the registered dataset
 
-Download the pinned GenoPHI E. coli subset:
-
-~~~bash
+```bash
 python scripts/fetch_genophi.py
 python scripts/explore_interactions.py
-~~~
+```
 
-For interactive exploration, open:
+For interactive exploration, open `notebooks/01_explore_interactions.ipynb`.
 
-~~~text
-notebooks/01_explore_interactions.ipynb
-~~~
+## Step 2: leakage-safe baseline benchmark
 
-## Step 2: leakage-safe benchmark
-
-Run the fixed held-out-strain benchmark:
-
-~~~bash
+```bash
 python scripts/run_benchmarks.py
-~~~
+```
 
-Or open:
+Or open `notebooks/02_leakage_safe_benchmark.ipynb`.
 
-~~~text
-notebooks/02_leakage_safe_benchmark.ipynb
-~~~
+The split is 70%/15%/15% by bacterial strain. No target strain is shared between
+train, validation, and test. Phage identities may be shared across partitions,
+so this measures generalization to unseen strains with known phages, not unseen
+phages. Cocktail coverage evaluation fails if selected-phage/test-strain pairs
+are missing rather than treating missing outcomes as negatives.
 
-The split is 70%/15%/15% by bacterial strain, so no target strain is shared
-between train, validation, and test. Benchmark results and interpretation are
-recorded in docs/step2_benchmark.md.
+Existing benchmark results and their interpretation are recorded in
+[`docs/step2_benchmark.md`](docs/step2_benchmark.md).
 
 ## Step 3A: reproduce a genome-aware reference
 
-Before building our own genome model, reproduce GenoPHI's official 25-strain x
-25-phage protein-family demo. This verifies the complete path from protein
-FASTA files through MMseqs2-derived features to strain-separated prediction.
+Before building a custom genome model, reproduce GenoPHI's official 25-strain x
+25-phage protein-family demo. This verifies the complete path from protein FASTA
+files through MMseqs2-derived features to strain-separated prediction.
 
 On Linux/macOS, or inside WSL2 on Windows:
 
-~~~bash
+```bash
 conda env create -f environment.yml
 conda activate phage-cocktail
-
 python scripts/bootstrap_genophi_demo.py
 python scripts/run_genophi_reference.py
 python scripts/summarize_genophi_reference.py
-~~~
+```
 
-GenoPHI is pinned to version 1.0.3 and its demo data are pinned to commit
-f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f. Details are in
-docs/step3_genophi_reference.md.
+GenoPHI is pinned to version 1.0.3 and its demo data to commit
+`f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f`. See
+[`docs/step3_genophi_reference.md`](docs/step3_genophi_reference.md).
 
-The pinned matrix contains 16,638 interactions across 177 bacterial strains and
-94 phages, with a 22.9% positive interaction rate. See data/README.md for
-provenance.
-
-## First milestones
+## Milestones
 
 - [x] Create a reproducible Python project skeleton
-- [x] Implement a naive independence-based cocktail baseline
-- [x] Import a reproducible public phage-host interaction dataset
-- [x] Explore class balance and matrix coverage
-- [x] Define leakage-safe held-out-strain train/validation/test splitting
-- [x] Establish host-agnostic pairwise and broadest-cocktail baselines
+- [x] Import a pinned public phage-host interaction dataset
+- [x] Register source revision, checksum, expected statistics and label caveats
+- [x] Define deterministic held-out-strain splitting and basic baselines
+- [x] Guard against train/test strain overlap and missing-pair coverage bias
 - [x] Wire in the official GenoPHI genome-aware reference workflow
+- [ ] Verify the source assay definition and license terms
 - [ ] Reproduce GenoPHI demo metrics locally
-- [ ] Train our own host-aware single-phage model on the fixed benchmark
-- [ ] Calibrate pairwise infection probabilities
-- [ ] Evaluate cocktails on unseen bacterial strains
-- [ ] Compare against stronger phage-host prediction baselines
+- [ ] Define target-specific label mapping before training mechanistic targets
+- [ ] Train and calibrate a host-aware model on the fixed benchmark
+- [ ] Evaluate generalization to unseen phages separately
+- [ ] Add grouped repeated evaluation and uncertainty intervals
 
 ## Scope
 
-This repository is a research prototype for computational prediction. It does not establish clinical efficacy or substitute for experimental validation.
+This repository is a research prototype for computational prediction. It does
+not establish clinical efficacy or substitute for experimental validation.
