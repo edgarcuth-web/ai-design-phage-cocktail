@@ -1,0 +1,53 @@
+{
+  "content_sha256": "a05899ae1ee7d39ba55b15454e3ea1f9b2b0aa8493daabe72b0c4bf00b6ff17c",
+  "schema_version": 1,
+  "record_id": "model-result-fixture-v1",
+  "result_id": "model-result-fixture-v1",
+  "request_id": "model-request-fixture-v1",
+  "request_sha256": "7f65577989791b921b9d79d9a4b540c6bcac1230a32f336f839615ee60e0a182",
+  "host_state": {
+    "record_id": "host-state-fixture:v1",
+    "content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "host_profile_id": "host-profile-fixture:v1",
+    "host_genome_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "as_of": "2026-10-17T11:00:00+00:00"
+  },
+  "phage_profile_id": "phage-profile-fixture-v1",
+  "phage_profile_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "probabilities": {
+    "adsorption": {
+      "status": "not_estimated",
+      "probability": null,
+      "uncertainty_lower": null,
+      "uncertainty_upper": null,
+      "uncertainty_method": null
+    },
+    "productive_infection": {
+      "status": "estimated",
+      "probability": 0.7,
+      "uncertainty_lower": 0.6,
+      "uncertainty_upper": 0.8,
+      "uncertainty_method": "fixture-interval-not-for-biological-use"
+    },
+    "resistance_emergence": {
+      "status": "not_estimated",
+      "probability": null,
+      "uncertainty_lower": null,
+      "uncertainty_upper": null,
+      "uncertainty_method": null
+    }
+  },
+  "mechanistic_explanation": "Schema conformance fixture only; not a biological prediction.",
+  "limitations": [
+    "Fixture only; no biological meaning."
+  ],
+  "producer": {
+    "name": "schema-fixture",
+    "version": "1",
+    "parameters": {
+      "fixture": true
+    },
+    "artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "predicted_at": "2026-10-17T12:01:00+00:00"
+}
