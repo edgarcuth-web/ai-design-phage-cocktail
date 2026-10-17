@@ -1,4 +1,8 @@
-"""Utilities for loading and validating phage-host interaction tables."""
+"""Utilities for loading and validating observed phage-host interaction rows.
+
+Rows represent explicitly observed source labels. Missing bacterium-phage pairs
+remain unknown; they are never filled in as negative outcomes by this module.
+"""
 
 from pathlib import Path
 
@@ -15,7 +19,8 @@ def normalize_interaction_columns(frame: pd.DataFrame) -> pd.DataFrame:
     """Return a copy with common external column names mapped to our schema.
 
     GenoPHI uses strain, phage, interaction while this project internally uses
-    bacterium, phage, infection.
+    bacterium, phage, infection. This is a column-name normalization only; it
+    does not reinterpret the source phenotype or map it to a mechanistic target.
     """
     frame = frame.copy()
     rename: dict[str, str] = {}
@@ -32,7 +37,7 @@ def normalize_interaction_columns(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def validate_interactions(frame: pd.DataFrame) -> pd.DataFrame:
-    """Validate a canonical interaction table and return it unchanged."""
+    """Validate explicitly observed binary interaction rows without imputing."""
     missing = set(REQUIRED_COLUMNS).difference(frame.columns)
     if missing:
         names = ", ".join(sorted(missing))
