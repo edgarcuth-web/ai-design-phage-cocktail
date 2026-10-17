@@ -29,15 +29,42 @@ def _metrics(y_true: pd.Series, probability: np.ndarray) -> dict[str, float]:
     }
 
 
+def _require_disjoint_bacterial_strains(
+    train: pd.DataFrame,
+    test: pd.DataFrame,
+) -> None:
+    """Fail closed if a held-out-strain benchmark reuses target strains."""
+    if train.empty or test.empty:
+        raise ValueError("train and test partitions must both contain observations.")
+
+    train_bacteria = set(train["bacterium"].astype(str))
+    test_bacteria = set(test["bacterium"].astype(str))
+    overlap = sorted(train_bacteria.intersection(test_bacteria))
+    if overlap:
+        preview = ", ".join(overlap[:5])
+        suffix = " ..." if len(overlap) > 5 else ""
+        raise ValueError(
+            "train and test bacterial strains must be disjoint; "
+            f"overlap: {preview}{suffix}"
+        )
+
+
 def evaluate_pairwise_baselines(
     train: pd.DataFrame,
     test: pd.DataFrame,
     *,
     smoothing: float = 1.0,
 ) -> pd.DataFrame:
-    """Evaluate three host-agnostic probability baselines on held-out strains."""
+    """Evaluate host-agnostic baselines on unseen bacterial strains.
+
+    Phage identities may occur in both partitions. This evaluates generalization
+    to unseen strains for known phages, not cold-start generalization to unseen
+    phages. Only explicitly observed test pairs are scored; missing pairs are
+    never imputed as negative labels.
+    """
     validate_interactions(train)
     validate_interactions(test)
+    _require_disjoint_bacterial_strains(train, test)
 
     global_rate = float(train["infection"].mean())
 
@@ -64,7 +91,7 @@ def evaluate_pairwise_baselines(
 
 
 def rank_phages_by_training_prevalence(train: pd.DataFrame) -> pd.DataFrame:
-    """Rank candidate phages using only training-strain infection outcomes."""
+    """Rank candidate phages using only explicitly observed training outcomes."""
     validate_interactions(train)
 
     ranking = (
@@ -80,19 +107,47 @@ def rank_phages_by_training_prevalence(train: pd.DataFrame) -> pd.DataFrame:
     return ranking
 
 
+def _require_complete_cocktail_matrix(
+    test: pd.DataFrame,
+    selected_phages: list[str],
+) -> None:
+    """Require observations for every selected-phage/held-out-strain pair."""
+    bacteria = sorted(test["bacterium"].astype(str).unique())
+    observed = set(
+        zip(test["bacterium"].astype(str), test["phage"].astype(str), strict=True)
+    )
+    missing = [
+        (bacterium, phage)
+        for bacterium in bacteria
+        for phage in selected_phages
+        if (bacterium, phage) not in observed
+    ]
+    if missing:
+        preview = ", ".join(f"({b}, {p})" for b, p in missing[:5])
+        suffix = " ..." if len(missing) > 5 else ""
+        raise ValueError(
+            "cannot calculate whole-cohort cocktail coverage: selected-phage "
+            "pairs are missing from the test matrix; missing pairs are unknown, "
+            f"not negative. Missing: {preview}{suffix}"
+        )
+
+
 def evaluate_broadest_cocktails(
     train: pd.DataFrame,
     test: pd.DataFrame,
     cocktail_sizes: Iterable[int] = range(1, 6),
 ) -> pd.DataFrame:
-    """Evaluate cocktails made by selecting the broadest training-set phages.
+    """Evaluate cocktails selected by training-set phage prevalence.
 
-    The actual coverage is the fraction of held-out bacterial strains infected
-    by at least one selected phage. The independence estimate is deliberately
-    naive and is included to expose overlap/dependence between phages.
+    Actual held-out coverage is only reported when every selected phage has an
+    observed outcome for every test strain. Missing pairs are unknown, not
+    negative, and cannot be silently omitted from the coverage denominator.
+    The independence estimate is deliberately naive and exposes overlap or
+    dependence between phages.
     """
     validate_interactions(train)
     validate_interactions(test)
+    _require_disjoint_bacterial_strains(train, test)
 
     ranking = rank_phages_by_training_prevalence(train)
     rows: list[dict[str, object]] = []
@@ -102,9 +157,10 @@ def evaluate_broadest_cocktails(
             raise ValueError("cocktail size must be between 1 and the number of phages")
 
         selected = ranking.head(size)
-        names = selected["phage"].tolist()
+        names = selected["phage"].astype(str).tolist()
+        _require_complete_cocktail_matrix(test, names)
 
-        held_out = test[test["phage"].isin(names)]
+        held_out = test[test["phage"].astype(str).isin(names)]
         infected_by_strain = held_out.groupby("bacterium")["infection"].max()
         actual_coverage = float(infected_by_strain.mean())
 

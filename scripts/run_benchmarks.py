@@ -1,4 +1,4 @@
-"""Run leakage-safe baselines on the pinned GenoPHI E. coli subset."""
+"""Run leakage-safe baselines on the registered GenoPHI E. coli subset."""
 
 from pathlib import Path
 
@@ -7,22 +7,24 @@ from phage_cocktail.benchmark import (
     evaluate_pairwise_baselines,
 )
 from phage_cocktail.data import load_interactions
+from phage_cocktail.registry import verify_registered_dataset
 from phage_cocktail.split import split_by_bacterium
 
-DATA_PATH = Path("data/raw/genophi_ecoli_subset.csv")
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+MANIFEST_PATH = REPOSITORY_ROOT / "data/registry/genophi_ecoli_subset.v1.json"
 
 
 def main() -> None:
-    if not DATA_PATH.exists():
-        raise SystemExit("Dataset not found. Run: python scripts/fetch_genophi.py")
-
-    frame = load_interactions(DATA_PATH)
+    verified = verify_registered_dataset(MANIFEST_PATH)
+    frame = load_interactions(verified.path)
     assigned = split_by_bacterium(frame, seed=42)
 
+    print(f"Dataset: {verified.manifest['dataset_id']}")
+    print(f"SHA-256: {verified.sha256}")
     strain_counts = assigned.groupby("split")["bacterium"].nunique()
     interaction_counts = assigned["split"].value_counts()
 
-    print("Held-out-strain split")
+    print("\nHeld-out-strain split")
     print("---------------------")
     for split in ("train", "validation", "test"):
         print(

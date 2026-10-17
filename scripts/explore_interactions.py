@@ -1,23 +1,19 @@
-"""Print basic statistics for the downloaded GenoPHI interaction matrix."""
+"""Print basic statistics for the registered GenoPHI interaction matrix."""
 
 from pathlib import Path
 
-from phage_cocktail.analysis import summarize_interactions
-from phage_cocktail.data import load_interactions
+from phage_cocktail.registry import verify_registered_dataset
 
-DATA_PATH = Path("data/raw/genophi_ecoli_subset.csv")
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+MANIFEST_PATH = REPOSITORY_ROOT / "data/registry/genophi_ecoli_subset.v1.json"
 
 
 def main() -> None:
-    if not DATA_PATH.exists():
-        raise SystemExit(
-            "Dataset not found. Run: python scripts/fetch_genophi.py"
-        )
+    verified = verify_registered_dataset(MANIFEST_PATH)
+    summary = verified.summary
 
-    frame = load_interactions(DATA_PATH)
-    summary = summarize_interactions(frame)
-
-    print("GenoPHI E. coli subset")
+    print(f"Dataset: {verified.manifest['dataset_id']}")
+    print(f"SHA-256: {verified.sha256}")
     print("----------------------")
     print(f"Interactions:      {summary['interactions']:,}")
     print(f"Bacterial strains: {summary['bacteria']:,}")
