@@ -61,7 +61,10 @@ def _timestamp(value: str, field_name: str) -> datetime:
 def _relative_path(value: str, *, field_name: str) -> PurePosixPath:
     if not isinstance(value, str) or not value.strip() or "\\" in value:
         raise ValueError(f"{field_name} must be a non-empty POSIX relative path.")
-    if value.startswith("/") or any(
+    has_windows_drive = (
+        len(value) >= 2 and value[0].isalpha() and value[1] == ":"
+    )
+    if value.startswith("/") or has_windows_drive or any(
         part in {"", ".", ".."} for part in value.split("/")
     ):
         raise ValueError(
