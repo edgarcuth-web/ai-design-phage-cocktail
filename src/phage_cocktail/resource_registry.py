@@ -17,7 +17,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 from .artifacts import (
     canonical_content_sha256,
     read_json_object,
-    sha256_file,
+    read_json_object_with_digest,
 )
 from .model_interface import validate_model_request
 
@@ -182,7 +182,9 @@ def load_resource_registry(path: str | Path) -> ResourceRegistry:
     if not resolved_manifest_path.is_file():
         raise ValueError(f"resource registry is not a file: {manifest_path}")
 
-    manifest = read_json_object(resolved_manifest_path, label="resource registry")
+    manifest, registry_file_sha256 = read_json_object_with_digest(
+        resolved_manifest_path, label="resource registry"
+    )
     errors = sorted(
         _registry_validator().iter_errors(manifest),
         key=lambda error: tuple(str(part) for part in error.absolute_path),
@@ -224,7 +226,7 @@ def load_resource_registry(path: str | Path) -> ResourceRegistry:
         registry_id=manifest["registry_id"],
         path=resolved_manifest_path,
         root=resolved_manifest_path.parent,
-        file_sha256=sha256_file(resolved_manifest_path),
+        file_sha256=registry_file_sha256,
         entries=tuple(entries),
     )
 
@@ -277,13 +279,14 @@ def _resolve_registered_json(
             f"registered {kind} resource path is not a file: {entry['path']}"
         )
 
-    observed_file_sha256 = sha256_file(resolved_path)
+    document, observed_file_sha256 = read_json_object_with_digest(
+        resolved_path, label=kind
+    )
     if observed_file_sha256 != entry["file_sha256"]:
         raise ValueError(
             f"{kind} resource file SHA-256 mismatch for {entry['path']!r}."
         )
 
-    document = read_json_object(resolved_path, label=kind)
     observed_content_sha256 = canonical_content_sha256(document)
     if observed_content_sha256 != entry["content_sha256"]:
         raise ValueError(
