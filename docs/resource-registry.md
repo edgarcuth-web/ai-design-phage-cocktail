@@ -90,9 +90,4 @@ print or copy the resource records themselves.
 
 ## Next boundary
 
-A future sequence-resource layer must separately resolve and verify the host
-genome identified by `host_genome_sha256` and any sequence referenced by the
-PhageProfile. Sequence hashing semantics must be explicit (for example, raw file
-bytes versus normalized sequence content) before such assets can be admitted.
-Feature extraction must then record tool/version/parameters and input digests.
-None of these steps are implied by successful JSON-record resolution.
+The sequence-resource layer is now specified in [sequence-registry.md](sequence-registry.md). Successful record resolution alone still does not imply that FASTA assets are available or verified. The next milestone is provenance-aware feature extraction with tool/version/parameters and input/output digests. None of those steps are implied by successful sequence resolution.
