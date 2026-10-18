@@ -22,6 +22,7 @@ HOST_FASTA = b">host contig 1\nacgt\n>plasmid\nnry\n"
 PHAGE_FASTA = b">phage sequence\nacgtac\n"
 HOST_SEQUENCE_SHA256 = hashlib.sha256(b"\0ACGT\0NRY").hexdigest()
 PHAGE_SEQUENCE_SHA256 = hashlib.sha256(b"\0ACGTAC").hexdigest()
+SOURCE_SNAPSHOT_SHA256 = "e" * 64
 
 
 def load_json(path):
@@ -60,6 +61,7 @@ def make_fixture(
     root,
     *,
     phage_has_sha=True,
+    include_snapshot_provenance=True,
     phage_length=6,
     phage_status="available",
     host_status="available",
@@ -102,6 +104,14 @@ def make_fixture(
             "accession": "PHAGE-TEST.1",
             "retrieved_at": TIMESTAMP,
             "source_uri": "https://example.invalid/software-test-fixture",
+            **(
+                {
+                    "snapshot_version": "fixture-release-v1",
+                    "snapshot_sha256": SOURCE_SNAPSHOT_SHA256,
+                }
+                if include_snapshot_provenance
+                else {}
+            ),
         },
         "sequence": sequence_ref,
         "source_annotations": {"fixture_only": True},
@@ -162,6 +172,7 @@ def make_fixture(
             "path": "sequences/phage.fna",
             "status": phage_status,
             "accession": "PHAGE-TEST.1",
+            "source_snapshot_sha256": SOURCE_SNAPSHOT_SHA256,
         },
     ]
     write_json(
@@ -284,10 +295,43 @@ class SequenceRegistryTests(unittest.TestCase):
                     fixture["sequence_registry"],
                 )
 
-    def test_accession_only_phage_reference_fails_closed(self):
+    def test_accession_only_reference_resolves_against_pinned_source_snapshot(self):
         with tempfile.TemporaryDirectory() as directory:
             fixture = make_fixture(directory, phage_has_sha=False)
-            with self.assertRaisesRegex(ValueError, "must include a normalized SHA-256"):
+            resolved = resolve_request_sequences(
+                fixture["request"],
+                fixture["resource_registry"],
+                fixture["sequence_registry"],
+            )
+            self.assertEqual(
+                resolved.phage_sequence.sequence_sha256, PHAGE_SEQUENCE_SHA256
+            )
+            self.assertEqual(
+                resolved.phage_sequence.source_snapshot_sha256,
+                SOURCE_SNAPSHOT_SHA256,
+            )
+
+    def test_accession_only_reference_without_snapshot_fails_closed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = make_fixture(
+                directory,
+                phage_has_sha=False,
+                include_snapshot_provenance=False,
+            )
+            with self.assertRaisesRegex(ValueError, "needs a normalized SHA-256"):
+                resolve_request_sequences(
+                    fixture["request"],
+                    fixture["resource_registry"],
+                    fixture["sequence_registry"],
+                )
+
+    def test_source_snapshot_must_match_profile_provenance(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = make_fixture(directory)
+            manifest = load_json(fixture["sequence_registry"])
+            manifest["entries"][1]["source_snapshot_sha256"] = "f" * 64
+            write_json(fixture["sequence_registry"], manifest)
+            with self.assertRaisesRegex(ValueError, "no registered phage_sequence"):
                 resolve_request_sequences(
                     fixture["request"],
                     fixture["resource_registry"],
@@ -320,7 +364,7 @@ class SequenceRegistryTests(unittest.TestCase):
             manifest = load_json(fixture["sequence_registry"])
             manifest["entries"].append(copy.deepcopy(manifest["entries"][0]))
             write_json(fixture["sequence_registry"], manifest)
-            with self.assertRaisesRegex(ValueError, "duplicate sequence registry entry"):
+            with self.assertRaisesRegex(ValueError, "duplicate sequence registry identity"):
                 load_sequence_registry(fixture["sequence_registry"])
 
     def test_empty_contig_is_rejected(self):
