@@ -10,7 +10,6 @@ import argparse
 from collections.abc import Mapping
 from datetime import datetime, timezone
 from functools import lru_cache
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -18,6 +17,11 @@ import sys
 import tempfile
 
 from jsonschema import Draft202012Validator, FormatChecker
+
+from .artifacts import (
+    canonical_content_sha256 as _content_hash,
+    read_json_object as _read_json,
+)
 
 SCHEMA_VERSION = 1
 PREDICTION_TARGETS = (
@@ -33,53 +37,6 @@ UNKNOWN_ESTIMATE = {
     "uncertainty_upper": None,
     "uncertainty_method": None,
 }
-
-
-def _reject_json_constant(value: str):
-    raise ValueError(f"non-standard JSON constant {value!r} is not allowed")
-
-
-def _read_json(path: str | Path) -> dict:
-    source = Path(path)
-    try:
-        data = json.loads(
-            source.read_text(encoding="utf-8"),
-            parse_constant=_reject_json_constant,
-        )
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
-        raise ValueError(f"cannot read valid JSON from {source}: {exc}") from exc
-    if not isinstance(data, dict):
-        raise ValueError(f"{source} must contain a JSON object.")
-    return data
-
-
-def _canonical_json(data: dict) -> str:
-    return json.dumps(
-        data,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-        allow_nan=False,
-    )
-
-
-def _content_hash(document: dict) -> str:
-    content = dict(document)
-    content.pop("content_sha256", None)
-    try:
-        canonical = _canonical_json(content).encode("utf-8")
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"document is not canonical JSON data: {exc}") from exc
-    return hashlib.sha256(canonical).hexdigest()
-
-
-def _verify_content_hash(document: dict, kind: str) -> None:
-    supplied = document.get("content_sha256")
-    expected = _content_hash(document)
-    if supplied != expected:
-        raise ValueError(
-            f"{kind} content_sha256 mismatch: expected {expected}, got {supplied!r}."
-        )
 
 
 def _parse_timestamp(value: str, field_name: str) -> datetime:
