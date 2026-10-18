@@ -293,8 +293,8 @@ class FeatureArtifactTests(unittest.TestCase):
 
     def test_cli_verifies_artifact_and_rejects_tampered_output(self):
         with tempfile.TemporaryDirectory() as directory:
-            path, _, primary, _ = make_artifact(Path(directory))
-            write_feature_artifact(load_feature_artifact(path, verify_outputs=True), path)
+            path, artifact, primary, _ = make_artifact(Path(directory))
+            write_feature_artifact(artifact, path)
             command = [
                 sys.executable,
                 "-m",
