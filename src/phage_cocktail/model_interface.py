@@ -340,6 +340,12 @@ def _parser() -> argparse.ArgumentParser:
         help="local sequence registry containing host/phage FASTA assets",
     )
 
+    verify_feature = commands.add_parser(
+        "verify-feature-artifact",
+        help="validate a FeatureArtifact manifest and re-hash its output files",
+    )
+    verify_feature.add_argument("artifact", type=Path)
+
     unresolved = commands.add_parser(
         "create-unresolved-result",
         help="write a not_estimated response without running inference",
@@ -390,6 +396,17 @@ def main(argv: list[str] | None = None) -> int:
                 args.sequence_registry,
             )
             print(json.dumps(sequences.summary(), ensure_ascii=False, indent=2))
+            return 0
+
+        if args.command == "verify-feature-artifact":
+            from .feature_artifact import load_feature_artifact
+
+            artifact = load_feature_artifact(args.artifact, verify_outputs=True)
+            print(
+                f"valid FeatureArtifact v{artifact['schema_version']}: "
+                f"{artifact['artifact_id']} sha256={artifact['content_sha256']} "
+                f"status={artifact['status']} outputs={len(artifact['outputs'])}"
+            )
             return 0
 
         if args.command == "create-unresolved-result":

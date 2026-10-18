@@ -90,4 +90,4 @@ print or copy the resource records themselves.
 
 ## Next boundary
 
-The sequence-resource layer is now specified in [sequence-registry.md](sequence-registry.md). Successful record resolution alone still does not imply that FASTA assets are available or verified. The next milestone is provenance-aware feature extraction with tool/version/parameters and input/output digests. None of those steps are implied by successful sequence resolution.
+The sequence-resource layer is specified in [sequence-registry.md](sequence-registry.md), and the downstream provenance manifest is defined in [FeatureArtifact v1](feature-artifact.md). Successful record or sequence resolution does not run an analyzer, derive features, or establish biological validity.
