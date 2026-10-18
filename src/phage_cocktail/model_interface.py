@@ -25,7 +25,7 @@ PREDICTION_TARGETS = (
     "productive_infection",
     "resistance_emergence",
 )
-SCHEMA_DIR = Path(__file__).resolve().parents[2] / "schemas"
+SCHEMA_DIR = Path(__file__).resolve().parent / "schemas"
 UNKNOWN_ESTIMATE = {
     "status": "not_estimated",
     "probability": None,
