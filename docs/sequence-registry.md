@@ -61,15 +61,17 @@ Every entry requires:
 - `path`: POSIX-style path relative to the sequence registry file;
 - `status`: `available` or `withdrawn`.
 
-A phage-sequence entry may also include `accession`. When the PhageProfile names
-an accession, the registered accession must match exactly as well as the
-normalized digest. Host-genome entries cannot declare a phage accession.
+A phage-sequence entry may also include `accession` and
+`source_snapshot_sha256`. When the PhageProfile names an accession, the
+registered accession must match. If the profile also names a retrieved-source
+snapshot SHA-256, the entry must carry the same snapshot digest. Host-genome
+entries cannot declare phage accession or snapshot fields.
 
-The combination of resource kind and normalized digest must be unique, file
-paths must be unique, and each accession can map to only one phage-sequence
-entry. Absolute paths, `.`/`..` components, backslashes, missing files, and
-symlinks that escape the registry directory are rejected. The resolver only
-uses paths from the locally managed registry.
+Host-genome digests must be unique; phage accession plus source-snapshot digest
+must identify at most one entry; file paths must be unique. Absolute paths,
+`.`/`..` components, backslashes, missing files, and symlinks that escape the
+registry directory are rejected. The resolver only uses paths from the locally
+managed registry.
 
 ## Resolution rules
 
@@ -85,11 +87,18 @@ and PhageProfile records using the resource registry. It then:
    from the same bounded byte buffer;
 6. checks the profile's optional sequence length against the observed base count.
 
-An accession-only phage reference fails closed. An accession is a locator, not
-a cryptographic content fingerprint; without an expected normalized digest, the
-resolver cannot prove it found the exact intended sequence. Likewise, a missing
-PhageProfile sequence reference is not treated as a negative or a successful
-resolution.
+A phage reference with a normalized sequence SHA-256 resolves by content digest,
+and any accession/snapshot fields present must match. If the profile has only an
+accession, resolution is allowed only for a `retrieved` profile with a pinned
+`provenance.snapshot_sha256`; the registry must bind that exact accession and
+snapshot digest to one FASTA asset. An accession alone is not sufficient.
+
+The resolver does not independently re-hash the full upstream snapshot. The
+trusted ingestion process that creates the sequence registry must verify the
+snapshot against its recorded digest before extracting the accession-specific
+FASTA. The registry records that provenance binding alongside the extracted
+file's own byte and normalized sequence hashes. A missing PhageProfile sequence
+reference is not treated as a negative or a successful resolution.
 
 The audit summary reports both digests, normalized base counts, contig counts,
 accession when present, and registry-relative paths. It never includes the raw
