@@ -450,14 +450,37 @@ def resolve_request_sequences(
         raise ValueError("PhageProfile sequence reference must be an object.")
     expected_phage_sha256 = sequence.get("sha256")
     provenance = resources.phage_profile["provenance"]
-    expected_snapshot_sha256 = (
-        provenance.get("snapshot_sha256")
-        if provenance.get("kind") == "retrieved"
-        else None
-    )
+    expected_accession = sequence.get("accession")
+    expected_snapshot_sha256 = None
+    if provenance.get("kind") == "retrieved":
+        provenance_accession = provenance.get("accession")
+        if not isinstance(provenance_accession, str) or not provenance_accession.strip():
+            raise ValueError("retrieved PhageProfile provenance needs an accession.")
+        if (
+            expected_accession is not None
+            and expected_accession != provenance_accession
+        ):
+            raise ValueError(
+                "PhageProfile sequence accession does not match retrieved provenance."
+            )
+        if expected_accession is None:
+            expected_accession = provenance_accession
+
+        snapshot_version = provenance.get("snapshot_version")
+        snapshot_sha256 = provenance.get("snapshot_sha256")
+        if bool(snapshot_version) != bool(snapshot_sha256):
+            raise ValueError(
+                "retrieved PhageProfile snapshot_version and snapshot_sha256 "
+                "must be provided together."
+            )
+        if snapshot_sha256 is not None:
+            if not _is_sha256(snapshot_sha256):
+                raise ValueError("retrieved PhageProfile source snapshot SHA-256 is invalid.")
+            expected_snapshot_sha256 = snapshot_sha256
+
     if expected_phage_sha256 is None and (
         provenance.get("kind") != "retrieved"
-        or not sequence.get("accession")
+        or not expected_accession
         or not _is_sha256(expected_snapshot_sha256)
     ):
         raise ValueError(
@@ -469,7 +492,7 @@ def resolve_request_sequences(
         registry,
         kind="phage_sequence",
         expected_sequence_sha256=expected_phage_sha256,
-        expected_accession=sequence.get("accession"),
+        expected_accession=expected_accession,
         expected_snapshot_sha256=expected_snapshot_sha256,
         expected_length=sequence.get("length"),
     )
