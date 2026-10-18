@@ -59,15 +59,42 @@ The fixture values are software conformance examples only. They are not
 biological predictions and must not be used as training data or scientific
 evidence.
 
-## Validation
+## File-based CLI
 
-Install the development dependencies and run:
+Install the project, then use the interface CLI:
 
 ```bash
 pip install -e ".[dev]"
+
+phage-model-interface validate-request tests/fixtures/model_request_v1.json
+phage-model-interface validate-result tests/fixtures/model_result_v1.json \
+  --request tests/fixtures/model_request_v1.json
+
+phage-model-interface create-unresolved-result \
+  tests/fixtures/model_request_v1.json /tmp/model-result-unresolved.json
+
+phage-model-interface validate-result /tmp/model-result-unresolved.json \
+  --request tests/fixtures/model_request_v1.json
+
 pytest
 ```
 
-This repository currently defines the contract and fixtures only. It does not
-yet implement inference from ModelRequest or emit ModelResult from a trained
-model.
+`validate-request` and `validate-result` check JSON Schema, canonical content
+hashes, derived record IDs, timestamp ordering, and (when the request is supplied)
+exact request/result lineage and target scope. Output files are written atomically
+only after validation.
+
+`create-unresolved-result` is an explicit transport smoke test, not an inference
+command. It writes all three targets as `not_estimated`, uses no model artifact
+digest, and records why no estimate was made. Missing files, malformed JSON,
+unsupported target names, estimated unrequested targets, invalid uncertainty
+intervals, and estimated outputs without a model artifact are rejected.
+
+The schemas are included as package data so the installed CLI does not depend on
+the repository checkout being present. CI checks the packaged copies against the
+canonical schemas in `schemas/`.
+
+No biological feature resolution, model inference, training, or calibration is
+implemented by this interface milestone. A request carries identifiers and
+fingerprints, not raw sequence data; an actual inference runner must resolve
+approved versioned resources and fail explicitly when they are unavailable.
