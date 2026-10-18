@@ -205,6 +205,22 @@ class ResourceRegistryTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "must not contain"):
                 load_resource_registry(registry_path)
 
+    def test_symlink_cannot_escape_registry_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            registry_root = Path(directory) / "registry-root"
+            request, registry_path, host_path, _ = make_local_registry(registry_root)
+            outside_path = Path(directory) / "outside-host-state.json"
+            outside_path.write_bytes(host_path.read_bytes())
+            host_path.unlink()
+            host_path.symlink_to(outside_path)
+
+            manifest = load_json(registry_path)
+            manifest["entries"][0]["file_sha256"] = file_hash(outside_path)
+            write_json(registry_path, manifest)
+
+            with self.assertRaisesRegex(ValueError, "escapes the registry directory"):
+                resolve_request_records(request, registry_path)
+
     def test_duplicate_resource_identity_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             _, registry_path, _, _ = make_local_registry(directory)
