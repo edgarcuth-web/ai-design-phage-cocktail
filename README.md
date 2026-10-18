@@ -57,6 +57,10 @@ An absent pair is unknown/unobserved, not a negative label. See
 
 The file-based boundary to the self-driving lab is defined by the v1 JSON Schemas in [`schemas/`](schemas/) and documented in [`docs/model-interface.md`](docs/model-interface.md). Shared fixtures are validated in CI. This is currently a wire-contract milestone, not an inference implementation: no biological prediction is emitted by these fixtures.
 
+## File-based model interface
+
+The model exchange CLI validates the shared `ModelRequest v1` and `ModelResult v1` contracts. It does not run inference. After installing the project, run `phage-model-interface --help` for commands, or see [`docs/model-interface.md`](docs/model-interface.md) for a request/result round trip and explicit unresolved response behavior.
+
 ## Setup
 
 Requires Python 3.11+.
