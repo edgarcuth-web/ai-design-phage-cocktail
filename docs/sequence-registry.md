@@ -76,7 +76,9 @@ managed registry.
 ## Resolution rules
 
 The resolver first validates the ModelRequest and resolves its exact HostState
-and PhageProfile records using the resource registry. It then:
+and PhageProfile records using the resource registry. For retrieved profiles,
+the sequence accession must agree with provenance, and snapshot version/hash must
+be supplied together. It then:
 
 1. resolves the HostState's `host_genome_sha256` as a `host_genome` asset;
 2. requires the PhageProfile to have a sequence reference with an explicit
@@ -91,7 +93,8 @@ A phage reference with a normalized sequence SHA-256 resolves by content digest,
 and any accession/snapshot fields present must match. If the profile has only an
 accession, resolution is allowed only for a `retrieved` profile with a pinned
 `provenance.snapshot_sha256`; the registry must bind that exact accession and
-snapshot digest to one FASTA asset. An accession alone is not sufficient.
+snapshot digest to one FASTA asset. The resolver checks the profile's accession
+against its retrieved provenance. An accession alone is not sufficient.
 
 The resolver does not independently re-hash the full upstream snapshot. The
 trusted ingestion process that creates the sequence registry must verify the
