@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/edgarcuth-web/ai-design-phage-cocktail/main/schemas/sequence-registry-v1.schema.json",
+  "title": "Local Sequence Resource Registry v1",
+  "description": "Content-addressed FASTA resources. sequence_sha256 is computed from normalized contigs; file_sha256 is computed from the exact original file bytes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "registry_id",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "registry_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sequenceEntry"
+      }
+    }
+  },
+  "$defs": {
+    "sequenceEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "sequence_sha256",
+        "file_sha256",
+        "path",
+        "status"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "host_genome",
+            "phage_sequence"
+          ]
+        },
+        "sequence_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "file_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "available",
+            "withdrawn"
+          ]
+        },
+        "accession": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
