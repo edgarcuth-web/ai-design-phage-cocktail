@@ -68,6 +68,8 @@ class ResolvedSequenceAsset:
         }
         if self.accession is not None:
             result["accession"] = self.accession
+        if self.source_snapshot_sha256 is not None:
+            result["source_snapshot_sha256"] = self.source_snapshot_sha256
         return result
 
 
@@ -174,16 +176,29 @@ def load_sequence_registry(path: str | Path) -> SequenceRegistry:
 
     identities = set()
     paths = set()
-    accessions = set()
     entries = []
     for index, entry in enumerate(manifest["entries"]):
-        key = (entry["kind"], entry["sequence_sha256"])
-        if key in identities:
-            raise ValueError(
-                f"duplicate sequence registry entry for {entry['kind']} "
-                f"{entry['sequence_sha256']!r}."
+        if entry["kind"] == "host_genome":
+            identity = ("host_genome", entry["sequence_sha256"])
+            if "accession" in entry or "source_snapshot_sha256" in entry:
+                raise ValueError(
+                    "host_genome entries must not declare phage accession/snapshot fields."
+                )
+        elif "accession" in entry:
+            identity = (
+                "phage_accession",
+                entry["accession"],
+                entry.get("source_snapshot_sha256"),
             )
-        identities.add(key)
+        else:
+            identity = (
+                "phage_sequence",
+                entry["sequence_sha256"],
+                entry.get("source_snapshot_sha256"),
+            )
+        if identity in identities:
+            raise ValueError(f"duplicate sequence registry identity: {identity!r}.")
+        identities.add(identity)
 
         relative_path = _validate_relative_path(
             entry["path"], field_name=f"entries[{index}].path"
@@ -191,16 +206,6 @@ def load_sequence_registry(path: str | Path) -> SequenceRegistry:
         if relative_path in paths:
             raise ValueError(f"duplicate sequence registry path: {entry['path']!r}.")
         paths.add(relative_path)
-
-        if entry["kind"] == "host_genome" and "accession" in entry:
-            raise ValueError("host_genome entries must not declare a phage accession.")
-        if entry["kind"] == "phage_sequence" and "accession" in entry:
-            accession = entry["accession"]
-            if accession in accessions:
-                raise ValueError(
-                    f"duplicate phage sequence accession {accession!r}."
-                )
-            accessions.add(accession)
         entries.append(dict(entry))
 
     return SequenceRegistry(
@@ -278,33 +283,86 @@ def _resolve_sequence(
     registry: SequenceRegistry,
     *,
     kind: str,
-    expected_sequence_sha256: str,
+    expected_sequence_sha256: str | None,
     expected_accession: str | None = None,
+    expected_snapshot_sha256: str | None = None,
     expected_length: int | None = None,
 ) -> ResolvedSequenceAsset:
-    if not _is_sha256(expected_sequence_sha256):
-        raise ValueError(f"{kind} requires an explicit normalized sequence SHA-256.")
+    if expected_sequence_sha256 is not None and not _is_sha256(
+        expected_sequence_sha256
+    ):
+        raise ValueError(f"{kind} normalized sequence SHA-256 is invalid.")
+    if expected_snapshot_sha256 is not None and not _is_sha256(
+        expected_snapshot_sha256
+    ):
+        raise ValueError(f"{kind} source snapshot SHA-256 is invalid.")
 
-    matches = [
-        entry
-        for entry in registry.entries
-        if entry["kind"] == kind
-        and entry["sequence_sha256"] == expected_sequence_sha256
-    ]
+    if expected_sequence_sha256 is not None:
+        matches = [
+            entry
+            for entry in registry.entries
+            if entry["kind"] == kind
+            and entry["sequence_sha256"] == expected_sequence_sha256
+        ]
+        if expected_accession is not None:
+            matches = [
+                entry for entry in matches
+                if entry.get("accession") == expected_accession
+            ]
+        if expected_snapshot_sha256 is not None:
+            matches = [
+                entry for entry in matches
+                if entry.get("source_snapshot_sha256") == expected_snapshot_sha256
+            ]
+    else:
+        if (
+            kind != "phage_sequence"
+            or not expected_accession
+            or not _is_sha256(expected_snapshot_sha256)
+        ):
+            raise ValueError(
+                "PhageProfile sequence reference needs a normalized SHA-256, "
+                "or an accession bound to a pinned retrieved-source snapshot SHA-256."
+            )
+        matches = [
+            entry
+            for entry in registry.entries
+            if entry["kind"] == kind
+            and entry.get("accession") == expected_accession
+            and entry.get("source_snapshot_sha256") == expected_snapshot_sha256
+        ]
+
     if not matches:
+        if expected_sequence_sha256 is None:
+            raise ValueError(
+                f"no registered {kind} sequence for accession {expected_accession!r} "
+                f"from source snapshot {expected_snapshot_sha256!r}."
+            )
         raise ValueError(
-            f"no registered {kind} sequence for exact normalized SHA-256 "
-            f"{expected_sequence_sha256!r}."
+            f"no registered {kind} sequence matching the requested content/provenance."
         )
+    if len(matches) != 1:
+        raise ValueError(
+            f"ambiguous sequence registry entries for {kind}; add an exact accession "
+            "and/or source snapshot fingerprint."
+        )
+
     entry = matches[0]
     if entry["status"] != "available":
         raise ValueError(
-            f"registered {kind} sequence {expected_sequence_sha256!r} is "
+            f"registered {kind} sequence {entry['sequence_sha256']!r} is "
             f"{entry['status']!r}, not available."
         )
     if expected_accession is not None and entry.get("accession") != expected_accession:
         raise ValueError(
             f"registered {kind} sequence accession does not match the profile reference."
+        )
+    if (
+        expected_snapshot_sha256 is not None
+        and entry.get("source_snapshot_sha256") != expected_snapshot_sha256
+    ):
+        raise ValueError(
+            f"registered {kind} sequence source snapshot does not match the profile provenance."
         )
 
     relative_path = _validate_relative_path(
@@ -338,7 +396,10 @@ def _resolve_sequence(
         raise ValueError(
             f"{kind} normalized sequence SHA-256 mismatch for {entry['path']!r}."
         )
-    if observed_sequence_sha256 != expected_sequence_sha256:
+    if (
+        expected_sequence_sha256 is not None
+        and observed_sequence_sha256 != expected_sequence_sha256
+    ):
         raise ValueError(f"{kind} sequence does not match the requested fingerprint.")
     if expected_length is not None and bases != expected_length:
         raise ValueError(
@@ -354,8 +415,8 @@ def _resolve_sequence(
         bases=bases,
         contigs=contigs,
         accession=entry.get("accession"),
+        source_snapshot_sha256=entry.get("source_snapshot_sha256"),
     )
-
 
 def resolve_request_sequences(
     request: dict,
@@ -386,10 +447,20 @@ def resolve_request_sequences(
     if not isinstance(sequence, dict):
         raise ValueError("PhageProfile sequence reference must be an object.")
     expected_phage_sha256 = sequence.get("sha256")
-    if not _is_sha256(expected_phage_sha256):
+    provenance = resources.phage_profile["provenance"]
+    expected_snapshot_sha256 = (
+        provenance.get("snapshot_sha256")
+        if provenance.get("kind") == "retrieved"
+        else None
+    )
+    if expected_phage_sha256 is None and (
+        provenance.get("kind") != "retrieved"
+        or not sequence.get("accession")
+        or not _is_sha256(expected_snapshot_sha256)
+    ):
         raise ValueError(
-            "PhageProfile sequence reference must include a normalized SHA-256; "
-            "accession-only references cannot be resolved exactly."
+            "PhageProfile sequence reference needs a normalized SHA-256, "
+            "or an accession bound to a pinned retrieved-source snapshot SHA-256."
         )
 
     phage_sequence = _resolve_sequence(
@@ -397,6 +468,7 @@ def resolve_request_sequences(
         kind="phage_sequence",
         expected_sequence_sha256=expected_phage_sha256,
         expected_accession=sequence.get("accession"),
+        expected_snapshot_sha256=expected_snapshot_sha256,
         expected_length=sequence.get("length"),
     )
 
