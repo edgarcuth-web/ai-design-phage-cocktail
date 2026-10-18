@@ -11,6 +11,7 @@ do not import each other's private Python modules.
 - [ModelResult v1 JSON Schema](../schemas/model-result-v1.schema.json)
 - [Request conformance fixture](../tests/fixtures/model_request_v1.json)
 - [Result conformance fixture](../tests/fixtures/model_result_v1.json)
+- [Local resource registry v1](resource-registry.md)
 
 The lab repository mirrors these schema files under its own `schemas/` directory.
 The schema `$id` values point to this repository's canonical paths on `main`.
@@ -94,7 +95,4 @@ The schemas are included as package data so the installed CLI does not depend on
 the repository checkout being present. CI checks the packaged copies against the
 canonical schemas in `schemas/`.
 
-No biological feature resolution, model inference, training, or calibration is
-implemented by this interface milestone. A request carries identifiers and
-fingerprints, not raw sequence data; an actual inference runner must resolve
-approved versioned resources and fail explicitly when they are unavailable.
+The file interface and exact local HostState/PhageProfile record resolver are implemented, but biological feature resolution, model inference, training, and calibration are not. A request carries identifiers and fingerprints, not raw sequence data. The resolver verifies locally registered records and fails closed on missing, withdrawn, tampered, or mismatched entries; it does not resolve raw genome sequence assets. See [the resource registry contract](resource-registry.md).
