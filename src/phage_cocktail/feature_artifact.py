@@ -20,7 +20,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from .artifacts import (
     canonical_content_sha256,
-    content_hash,
+    canonical_json,
     read_json_object,
     read_json_object_with_digest,
 )
@@ -40,6 +40,10 @@ def _feature_artifact_validator() -> Draft202012Validator:
     schema = read_json_object(SCHEMA_PATH, label="FeatureArtifact schema")
     Draft202012Validator.check_schema(schema)
     return Draft202012Validator(schema, format_checker=FormatChecker())
+
+
+def _parameters_sha256(parameters: dict) -> str:
+    return hashlib.sha256(canonical_json(parameters).encode("utf-8")).hexdigest()
 
 
 def _timestamp(value: str, field_name: str) -> datetime:
@@ -136,7 +140,7 @@ def validate_feature_artifact(document: dict) -> dict:
             f"expected {expected_content_sha256}, got {document.get('content_sha256')!r}."
         )
     analysis = document["analysis"]
-    expected_parameters_sha256 = content_hash(analysis["parameters"])
+    expected_parameters_sha256 = _parameters_sha256(analysis["parameters"])
     if analysis["parameters_sha256"] != expected_parameters_sha256:
         raise ValueError(
             "FeatureArtifact parameters_sha256 mismatch: "
@@ -231,7 +235,7 @@ def build_feature_artifact(
         "started_at": started_at,
         "finished_at": finished_at,
         "parameters": parameters,
-        "parameters_sha256": content_hash(parameters),
+        "parameters_sha256": _parameters_sha256(parameters),
         "reference_data": [dict(item) for item in reference_data],
     }
     if environment is not None:
