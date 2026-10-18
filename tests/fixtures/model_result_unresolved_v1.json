@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "record_id": "model-request-fixture-v1:unresolved",
+  "result_id": "model-request-fixture-v1:unresolved",
+  "request_id": "model-request-fixture-v1",
+  "request_sha256": "7f65577989791b921b9d79d9a4b540c6bcac1230a32f336f839615ee60e0a182",
+  "host_state": {
+    "record_id": "host-state-fixture:v1",
+    "content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "host_profile_id": "host-profile-fixture:v1",
+    "host_genome_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "as_of": "2026-10-17T11:00:00+00:00"
+  },
+  "phage_profile_id": "phage-profile-fixture-v1",
+  "phage_profile_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "probabilities": {
+    "adsorption": {
+      "status": "not_estimated",
+      "probability": null,
+      "uncertainty_lower": null,
+      "uncertainty_upper": null,
+      "uncertainty_method": null
+    },
+    "productive_infection": {
+      "status": "not_estimated",
+      "probability": null,
+      "uncertainty_lower": null,
+      "uncertainty_upper": null,
+      "uncertainty_method": null
+    },
+    "resistance_emergence": {
+      "status": "not_estimated",
+      "probability": null,
+      "uncertainty_lower": null,
+      "uncertainty_upper": null,
+      "uncertainty_method": null
+    }
+  },
+  "mechanistic_explanation": "No inference was run. This result records request lineage only and contains no biological prediction.",
+  "limitations": [
+    "No inference implementation was run; all targets remain not_estimated.",
+    "The request contains identifiers and fingerprints, not resolved biological features.",
+    "This software response is not biological evidence and must not be used as a training label."
+  ],
+  "producer": {
+    "name": "unresolved-no-inference",
+    "version": "1",
+    "parameters": {
+      "reason": "inference_not_available"
+    },
+    "artifact_sha256": null
+  },
+  "predicted_at": "2026-10-17T12:02:00Z",
+  "content_sha256": "3825781de9635a502eca3ab4d9733855f2e3e940148ca3b878a73ba8ddf96ab5"
+}

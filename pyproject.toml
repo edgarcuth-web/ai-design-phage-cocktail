@@ -12,18 +12,24 @@ dependencies = [
     "numpy>=1.26",
     "pandas>=2.1,<3.0",
     "scikit-learn>=1.4",
+    "jsonschema>=4.23,<5",
 ]
+
+[project.scripts]
+phage-model-interface = "phage_cocktail.model_interface:main"
 
 [project.optional-dependencies]
 dev = [
     "jupyterlab>=4.0",
-    "jsonschema>=4.23,<5",
     "matplotlib>=3.8",
     "pytest>=8.0",
 ]
 reference = [
     "genophi==1.0.3",
 ]
+
+[tool.setuptools.package-data]
+phage_cocktail = ["schemas/*.schema.json"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
