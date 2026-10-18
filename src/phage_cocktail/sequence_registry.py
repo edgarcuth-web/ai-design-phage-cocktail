@@ -56,6 +56,7 @@ class ResolvedSequenceAsset:
     bases: int
     contigs: int
     accession: str | None = None
+    source_snapshot_sha256: str | None = None
 
     def summary(self, root: Path) -> dict:
         result = {
