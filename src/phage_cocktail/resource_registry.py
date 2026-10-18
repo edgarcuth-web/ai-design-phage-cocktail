@@ -154,7 +154,7 @@ def _registry_validator() -> Draft202012Validator:
 
 
 def _validate_relative_path(value: str, *, field_name: str) -> PurePosixPath:
-    if not isinstance(value, str) or not value or "\\" in value:
+    if not isinstance(value, str) or not value.strip() or "\\" in value:
         raise ValueError(f"{field_name} must be a non-empty POSIX relative path.")
     if value.startswith("/"):
         raise ValueError(f"{field_name} must be relative to the registry directory.")
@@ -185,6 +185,10 @@ def load_resource_registry(path: str | Path) -> ResourceRegistry:
     manifest, registry_file_sha256 = read_json_object_with_digest(
         resolved_manifest_path, label="resource registry"
     )
+    if type(manifest.get("schema_version")) is not int or manifest["schema_version"] != 1:
+        raise ValueError("resource registry schema_version must be integer 1.")
+    if not isinstance(manifest.get("registry_id"), str) or not manifest["registry_id"].strip():
+        raise ValueError("resource registry registry_id must be a non-empty string.")
     errors = sorted(
         _registry_validator().iter_errors(manifest),
         key=lambda error: tuple(str(part) for part in error.absolute_path),
@@ -203,6 +207,8 @@ def load_resource_registry(path: str | Path) -> ResourceRegistry:
     paths = set()
     entries = []
     for index, entry in enumerate(manifest["entries"]):
+        if not entry["resource_id"].strip():
+            raise ValueError(f"entries[{index}].resource_id must not be blank.")
         key = (entry["kind"], entry["resource_id"])
         if key in identifiers:
             raise ValueError(
@@ -303,7 +309,7 @@ def _resolve_registered_json(
 def _validate_host_state_record(document: dict, reference: dict) -> None:
     if set(document) != _HOST_STATE_FIELDS:
         raise ValueError("resolved HostState has missing or unknown top-level fields.")
-    if document["schema_version"] != 1:
+    if type(document["schema_version"]) is not int or document["schema_version"] != 1:
         raise ValueError("resolved HostState schema_version is not supported.")
     if type(document["revision"]) is not int or document["revision"] < 1:
         raise ValueError("resolved HostState revision must be a positive integer.")
@@ -341,7 +347,7 @@ def _validate_phage_profile_record(document: dict, request: dict) -> None:
         raise ValueError(
             "resolved PhageProfile has missing or unknown top-level fields."
         )
-    if document["schema_version"] != 1:
+    if type(document["schema_version"]) is not int or document["schema_version"] != 1:
         raise ValueError("resolved PhageProfile schema_version is not supported.")
     if type(document["revision"]) is not int or document["revision"] < 1:
         raise ValueError("resolved PhageProfile revision must be a positive integer.")
@@ -379,6 +385,11 @@ def _validate_phage_profile_record(document: dict, request: dict) -> None:
             raise ValueError("resolved PhageProfile sequence length is invalid.")
     if not isinstance(document["source_annotations"], dict):
         raise ValueError("resolved PhageProfile source_annotations must be an object.")
+    for key, value in document["source_annotations"].items():
+        if not isinstance(key, str) or not key.strip():
+            raise ValueError("resolved PhageProfile annotation keys must not be blank.")
+        if value is not None and not isinstance(value, (str, int, float, bool)):
+            raise ValueError("resolved PhageProfile annotations must be scalar values or null.")
 
 
 def resolve_request_records(
