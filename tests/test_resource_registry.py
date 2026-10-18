@@ -56,6 +56,8 @@ def make_local_registry(root, *, host_status="available", phage_status="availabl
     """Create matching records with unmistakably software-only test provenance."""
     root = Path(root)
     request = load_json(REQUEST_FIXTURE)
+    # The shared wire fixture uses a generic label; use the lab's profile_id:vN convention here.
+    request["phage_profile_id"] = "phage-profile-fixture:v1"
 
     host_ref = request["host_state"]
     host_state = {
