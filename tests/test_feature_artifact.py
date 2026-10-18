@@ -236,6 +236,15 @@ class FeatureArtifactTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "must not be absolute or contain"):
                 verify_feature_artifact_outputs(tampered, path)
 
+    def test_windows_drive_qualified_output_path_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path, artifact, _, _ = make_artifact(Path(directory))
+            tampered = copy.deepcopy(artifact)
+            tampered["outputs"][0]["path"] = "C:/outside.json"
+            reseal(tampered)
+            with self.assertRaisesRegex(ValueError, "must not be absolute or contain"):
+                verify_feature_artifact_outputs(tampered, path)
+
     def test_symlink_cannot_escape_manifest_directory(self):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
