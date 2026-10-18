@@ -301,6 +301,18 @@ def _parser() -> argparse.ArgumentParser:
         help="also verify exact request/result lineage and requested-target scope",
     )
 
+    resolve_records = commands.add_parser(
+        "resolve-request-records",
+        help="resolve exact HostState and PhageProfile records from a local registry",
+    )
+    resolve_records.add_argument("request", type=Path)
+    resolve_records.add_argument(
+        "--registry",
+        required=True,
+        type=Path,
+        help="local resource-registry JSON manifest",
+    )
+
     unresolved = commands.add_parser(
         "create-unresolved-result",
         help="write a not_estimated response without running inference",
@@ -331,6 +343,14 @@ def main(argv: list[str] | None = None) -> int:
                 f"valid ModelResult v{result['schema_version']}{suffix}: "
                 f"{result['result_id']} sha256={result['content_sha256']}"
             )
+            return 0
+
+        if args.command == "resolve-request-records":
+            from .resource_registry import resolve_request_records
+
+            request = load_model_request(args.request)
+            resources = resolve_request_records(request, args.registry)
+            print(json.dumps(resources.summary(), ensure_ascii=False, indent=2))
             return 0
 
         if args.command == "create-unresolved-result":
