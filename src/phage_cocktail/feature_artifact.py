@@ -31,7 +31,6 @@ SCHEMA_PATH = (
 )
 MAX_MANIFEST_BYTES = 4_000_000
 READ_CHUNK_BYTES = 1024 * 1024
-OUTPUT_ROLES = ("primary", "raw", "log", "auxiliary")
 OUTPUT_SPEC_FIELDS = {"role", "path", "format", "media_type", "schema_sha256"}
 
 
@@ -142,7 +141,31 @@ def validate_feature_artifact(document: dict) -> dict:
             "FeatureArtifact content_sha256 mismatch: "
             f"expected {expected_content_sha256}, got {document.get('content_sha256')!r}."
         )
+    for field_name in ("artifact_id", "feature_set"):
+        if not document[field_name].strip():
+            raise ValueError(f"FeatureArtifact {field_name} must not be blank.")
     subject = document["subject"]
+    if not subject["id"].strip():
+        raise ValueError("FeatureArtifact subject.id must not be blank.")
+    if subject.get("accession") is not None and not subject["accession"].strip():
+        raise ValueError("FeatureArtifact subject.accession must not be blank.")
+    tool = document["analysis"]["tool"]
+    for field_name in ("name", "version"):
+        if not tool[field_name].strip():
+            raise ValueError(f"FeatureArtifact analysis.tool.{field_name} must not be blank.")
+    for reference in document["analysis"]["reference_data"]:
+        for field_name in ("name", "version"):
+            if not reference[field_name].strip():
+                raise ValueError(
+                    f"FeatureArtifact reference_data.{field_name} must not be blank."
+                )
+    for output in document["outputs"]:
+        for field_name in ("role", "path", "format", "media_type"):
+            if not output[field_name].strip():
+                raise ValueError(f"FeatureArtifact output {field_name} must not be blank.")
+    if any(not item.strip() for item in document["limitations"]):
+        raise ValueError("FeatureArtifact limitations must not contain blank entries.")
+
     registry_fields = (
         subject.get("sequence_registry_id"),
         subject.get("sequence_registry_file_sha256"),
