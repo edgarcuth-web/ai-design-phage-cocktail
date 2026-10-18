@@ -34,13 +34,14 @@ src/phage_cocktail/
   artifacts.py      # canonical JSON hashes and raw-file digests
   model_interface.py # ModelRequest/ModelResult validation and CLI
   resource_registry.py # exact local HostState/PhageProfile resolution
+  sequence_registry.py # content-addressed host/phage FASTA resolution
   baseline.py       # simple cocktail probability baseline
   data.py           # observed interaction-table loading/validation
   registry.py       # dataset checksum and summary verification
   split.py          # deterministic strain-level splits
   benchmark.py      # leakage-guarded pairwise/cocktail baselines
 tests/              # automated tests
-schemas/            # versioned exchange and resource-registry JSON Schemas
+schemas/            # versioned exchange, resource and sequence registry schemas
 ```
 
 ## Dataset and labels
@@ -67,6 +68,10 @@ The model exchange CLI validates the shared `ModelRequest v1` and `ModelResult v
 ## Model resource resolution
 
 The `phage-model-interface resolve-request-records` command resolves the exact HostState and PhageProfile JSON records named by a ModelRequest through an explicit local registry. It verifies record IDs, canonical content hashes, raw file hashes and request lineage, and rejects path traversal or withdrawn/mismatched resources. No production resource registry or biological records are bundled. This step does not resolve genome sequence files or establish biological validity; see [`docs/resource-registry.md`](docs/resource-registry.md).
+
+## Sequence resource resolution
+
+The `phage-model-interface resolve-request-sequences` command resolves the host genome and phage FASTA named by validated HostState and PhageProfile records. It separately verifies raw file-byte SHA-256 and normalized sequence SHA-256, checks declared phage sequence length/accession, and rejects missing, withdrawn, tampered, or path-escaping resources. Accession-only phage references fail closed. It does not derive features or establish biological validity; see [`docs/sequence-registry.md`](docs/sequence-registry.md).
 
 ## Setup
 
