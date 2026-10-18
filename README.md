@@ -31,13 +31,16 @@ data/
   registry/         # versioned dataset manifests and label semantics
 notebooks/          # exploration and experiments
 src/phage_cocktail/
+  artifacts.py      # canonical JSON hashes and raw-file digests
+  model_interface.py # ModelRequest/ModelResult validation and CLI
+  resource_registry.py # exact local HostState/PhageProfile resolution
   baseline.py       # simple cocktail probability baseline
   data.py           # observed interaction-table loading/validation
   registry.py       # dataset checksum and summary verification
   split.py          # deterministic strain-level splits
   benchmark.py      # leakage-guarded pairwise/cocktail baselines
 tests/              # automated tests
-schemas/            # versioned ModelRequest / ModelResult JSON Schemas
+schemas/            # versioned exchange and resource-registry JSON Schemas
 ```
 
 ## Dataset and labels
@@ -60,6 +63,10 @@ The file-based boundary to the self-driving lab is defined by the v1 JSON Schema
 ## File-based model interface
 
 The model exchange CLI validates the shared `ModelRequest v1` and `ModelResult v1` contracts. It does not run inference. After installing the project, run `phage-model-interface --help` for commands, or see [`docs/model-interface.md`](docs/model-interface.md) for a request/result round trip and explicit unresolved response behavior.
+
+## Model resource resolution
+
+The `phage-model-interface resolve-request-records` command resolves the exact HostState and PhageProfile JSON records named by a ModelRequest through an explicit local registry. It verifies record IDs, canonical content hashes, raw file hashes and request lineage, and rejects path traversal or withdrawn/mismatched resources. No production resource registry or biological records are bundled. This step does not resolve genome sequence files or establish biological validity; see [`docs/resource-registry.md`](docs/resource-registry.md).
 
 ## Setup
 

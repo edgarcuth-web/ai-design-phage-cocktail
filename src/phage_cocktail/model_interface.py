@@ -10,7 +10,6 @@ import argparse
 from collections.abc import Mapping
 from datetime import datetime, timezone
 from functools import lru_cache
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -18,6 +17,11 @@ import sys
 import tempfile
 
 from jsonschema import Draft202012Validator, FormatChecker
+
+from .artifacts import (
+    canonical_content_sha256 as _content_hash,
+    read_json_object as _read_json,
+)
 
 SCHEMA_VERSION = 1
 PREDICTION_TARGETS = (
@@ -33,53 +37,6 @@ UNKNOWN_ESTIMATE = {
     "uncertainty_upper": None,
     "uncertainty_method": None,
 }
-
-
-def _reject_json_constant(value: str):
-    raise ValueError(f"non-standard JSON constant {value!r} is not allowed")
-
-
-def _read_json(path: str | Path) -> dict:
-    source = Path(path)
-    try:
-        data = json.loads(
-            source.read_text(encoding="utf-8"),
-            parse_constant=_reject_json_constant,
-        )
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
-        raise ValueError(f"cannot read valid JSON from {source}: {exc}") from exc
-    if not isinstance(data, dict):
-        raise ValueError(f"{source} must contain a JSON object.")
-    return data
-
-
-def _canonical_json(data: dict) -> str:
-    return json.dumps(
-        data,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-        allow_nan=False,
-    )
-
-
-def _content_hash(document: dict) -> str:
-    content = dict(document)
-    content.pop("content_sha256", None)
-    try:
-        canonical = _canonical_json(content).encode("utf-8")
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"document is not canonical JSON data: {exc}") from exc
-    return hashlib.sha256(canonical).hexdigest()
-
-
-def _verify_content_hash(document: dict, kind: str) -> None:
-    supplied = document.get("content_sha256")
-    expected = _content_hash(document)
-    if supplied != expected:
-        raise ValueError(
-            f"{kind} content_sha256 mismatch: expected {expected}, got {supplied!r}."
-        )
 
 
 def _parse_timestamp(value: str, field_name: str) -> datetime:
@@ -104,6 +61,15 @@ def _validator(schema_name: str) -> Draft202012Validator:
     schema = _read_json(SCHEMA_DIR / schema_name)
     Draft202012Validator.check_schema(schema)
     return Draft202012Validator(schema, format_checker=FormatChecker())
+
+
+def _verify_content_hash(document: dict, kind: str) -> None:
+    supplied = document.get("content_sha256")
+    expected = _content_hash(document)
+    if supplied != expected:
+        raise ValueError(
+            f"{kind} content_sha256 mismatch: expected {expected}, got {supplied!r}."
+        )
 
 
 def _validate_schema(document: dict, schema_name: str, kind: str) -> None:
@@ -344,6 +310,18 @@ def _parser() -> argparse.ArgumentParser:
         help="also verify exact request/result lineage and requested-target scope",
     )
 
+    resolve_records = commands.add_parser(
+        "resolve-request-records",
+        help="resolve exact HostState and PhageProfile records from a local registry",
+    )
+    resolve_records.add_argument("request", type=Path)
+    resolve_records.add_argument(
+        "--registry",
+        required=True,
+        type=Path,
+        help="local resource-registry JSON manifest",
+    )
+
     unresolved = commands.add_parser(
         "create-unresolved-result",
         help="write a not_estimated response without running inference",
@@ -374,6 +352,14 @@ def main(argv: list[str] | None = None) -> int:
                 f"valid ModelResult v{result['schema_version']}{suffix}: "
                 f"{result['result_id']} sha256={result['content_sha256']}"
             )
+            return 0
+
+        if args.command == "resolve-request-records":
+            from .resource_registry import resolve_request_records
+
+            request = load_model_request(args.request)
+            resources = resolve_request_records(request, args.registry)
+            print(json.dumps(resources.summary(), ensure_ascii=False, indent=2))
             return 0
 
         if args.command == "create-unresolved-result":
