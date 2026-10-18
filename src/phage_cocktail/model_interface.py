@@ -322,6 +322,24 @@ def _parser() -> argparse.ArgumentParser:
         help="local resource-registry JSON manifest",
     )
 
+    resolve_sequences = commands.add_parser(
+        "resolve-request-sequences",
+        help="resolve exact host-genome and phage-sequence FASTA assets",
+    )
+    resolve_sequences.add_argument("request", type=Path)
+    resolve_sequences.add_argument(
+        "--registry",
+        required=True,
+        type=Path,
+        help="local resource registry containing HostState and PhageProfile JSON",
+    )
+    resolve_sequences.add_argument(
+        "--sequence-registry",
+        required=True,
+        type=Path,
+        help="local sequence registry containing host/phage FASTA assets",
+    )
+
     unresolved = commands.add_parser(
         "create-unresolved-result",
         help="write a not_estimated response without running inference",
@@ -360,6 +378,18 @@ def main(argv: list[str] | None = None) -> int:
             request = load_model_request(args.request)
             resources = resolve_request_records(request, args.registry)
             print(json.dumps(resources.summary(), ensure_ascii=False, indent=2))
+            return 0
+
+        if args.command == "resolve-request-sequences":
+            from .sequence_registry import resolve_request_sequences
+
+            request = load_model_request(args.request)
+            sequences = resolve_request_sequences(
+                request,
+                args.registry,
+                args.sequence_registry,
+            )
+            print(json.dumps(sequences.summary(), ensure_ascii=False, indent=2))
             return 0
 
         if args.command == "create-unresolved-result":
