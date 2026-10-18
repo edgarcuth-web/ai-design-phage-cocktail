@@ -426,8 +426,9 @@ def resolve_request_sequences(
 ) -> ResolvedModelSequences:
     """Resolve both sequence assets after validating exact input records.
 
-    Accession-only PhageProfile sequence references fail closed: without an
-    expected sequence SHA-256, the intended sequence bytes cannot be verified.
+    Accession-only PhageProfile sequence references require a retrieved profile
+    with a pinned source-snapshot SHA-256 and an exact accession/snapshot mapping
+    in the trusted local registry.
     No remote fetch, feature extraction, inference, or biological validation is
     performed.
     """
