@@ -128,9 +128,4 @@ the two resolved sequence assets. It does not copy or print FASTA sequences.
 
 ## Next boundary
 
-The next step is provenance-aware feature extraction. Every derived feature
-artifact should record the normalized sequence digest(s), tool and version,
-parameters, reference database snapshot and digest, output digest, and explicit
-limitations. Feature extraction must not run until the sequence inputs are
-resolved and the selected tools' scientific and licensing requirements are
-reviewed.
+The provenance manifest is now defined in [FeatureArtifact v1](feature-artifact.md). It records normalized and raw input digests, tool/version/parameters, reference snapshots, output digests and limitations. No analyzer is wired into this contract yet. The next step is a narrow adapter around one reviewed real tool, after checking the intended feature class, pinned database release and license.
