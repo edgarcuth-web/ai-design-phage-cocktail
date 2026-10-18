@@ -95,6 +95,16 @@ class ModelInterfaceTests(unittest.TestCase):
 
             validate_model_request(tampered)
 
+    def test_generated_unresolved_result_matches_shared_lab_fixture(self):
+        expected_path = FIXTURE_DIR / "model_result_unresolved_v1.json"
+        expected = load_model_result(expected_path, request=self.request)
+        generated = create_unresolved_result(
+            self.request,
+            result_id=expected["result_id"],
+            predicted_at=expected["predicted_at"],
+        )
+        self.assertEqual(generated, expected)
+
     def test_unsupported_target_is_rejected_explicitly(self):
         with self.assertRaisesRegex(ValueError, "unsupported prediction target"):
             build_model_result(
