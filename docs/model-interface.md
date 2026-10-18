@@ -71,6 +71,9 @@ phage-model-interface validate-request tests/fixtures/model_request_v1.json
 phage-model-interface validate-result tests/fixtures/model_result_v1.json \
   --request tests/fixtures/model_request_v1.json
 
+phage-model-interface resolve-request-records \\
+  path/to/model-request.json --registry path/to/registry.v1.json
+
 phage-model-interface create-unresolved-result \
   tests/fixtures/model_request_v1.json /tmp/model-result-unresolved.json
 
