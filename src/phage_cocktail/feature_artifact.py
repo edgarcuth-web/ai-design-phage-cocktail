@@ -139,6 +139,19 @@ def validate_feature_artifact(document: dict) -> dict:
             "FeatureArtifact content_sha256 mismatch: "
             f"expected {expected_content_sha256}, got {document.get('content_sha256')!r}."
         )
+    subject = document["subject"]
+    registry_fields = (
+        subject.get("sequence_registry_id"),
+        subject.get("sequence_registry_file_sha256"),
+    )
+    if any(value is not None for value in registry_fields) and not all(
+        isinstance(value, str) and value.strip() for value in registry_fields
+    ):
+        raise ValueError(
+            "subject sequence_registry_id and sequence_registry_file_sha256 "
+            "must be provided together."
+        )
+
     analysis = document["analysis"]
     expected_parameters_sha256 = _parameters_sha256(analysis["parameters"])
     if analysis["parameters_sha256"] != expected_parameters_sha256:
@@ -165,7 +178,7 @@ def validate_feature_artifact(document: dict) -> dict:
 
     reference_identities = set()
     for reference in analysis["reference_data"]:
-        identity = (reference["name"], reference["version"], reference["sha256"])
+        identity = (reference["name"], reference["version"])
         if identity in reference_identities:
             raise ValueError(f"duplicate reference snapshot entry: {identity!r}.")
         reference_identities.add(identity)
