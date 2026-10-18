@@ -37,6 +37,7 @@ src/phage_cocktail/
   split.py          # deterministic strain-level splits
   benchmark.py      # leakage-guarded pairwise/cocktail baselines
 tests/              # automated tests
+schemas/            # versioned ModelRequest / ModelResult JSON Schemas
 ```
 
 ## Dataset and labels
@@ -51,6 +52,10 @@ productive infection, or resistance-emergence targets are **not yet verified**.
 An absent pair is unknown/unobserved, not a negative label. See
 [`docs/dataset_contract.md`](docs/dataset_contract.md) and
 [`data/README.md`](data/README.md).
+
+## External model exchange contract
+
+The file-based boundary to the self-driving lab is defined by the v1 JSON Schemas in [`schemas/`](schemas/) and documented in [`docs/model-interface.md`](docs/model-interface.md). Shared fixtures are validated in CI. This is currently a wire-contract milestone, not an inference implementation: no biological prediction is emitted by these fixtures.
 
 ## Setup
 
