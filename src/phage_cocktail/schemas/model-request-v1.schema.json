@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/edgarcuth-web/ai-design-phage-cocktail/main/schemas/model-request-v1.schema.json",
+  "title": "ModelRequest v1",
+  "description": "Content-addressed request from the lab to an external phage-host interaction model. record_id must equal request_id; content_sha256 is the SHA-256 of the canonical JSON content excluding content_sha256.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "content_sha256",
+    "schema_version",
+    "record_id",
+    "request_id",
+    "host_state",
+    "phage_profile_id",
+    "phage_profile_sha256",
+    "requested_targets",
+    "created_at"
+  ],
+  "properties": {
+    "content_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Must equal request_id; enforced by the lab's semantic contract validator."
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "host_state": {
+      "$ref": "#/$defs/hostStateReference"
+    },
+    "phage_profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "phage_profile_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "requested_targets": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "adsorption",
+          "productive_infection",
+          "resistance_emergence"
+        ]
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "hostStateReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_id",
+        "content_sha256",
+        "host_profile_id",
+        "host_genome_sha256",
+        "as_of"
+      ],
+      "properties": {
+        "record_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "host_profile_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "host_genome_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
