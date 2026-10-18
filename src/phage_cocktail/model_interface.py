@@ -7,15 +7,15 @@ It does not resolve biological features, train models, or run inference.
 from __future__ import annotations
 
 import argparse
+from collections.abc import Mapping
 from datetime import datetime, timezone
+from functools import lru_cache
 import hashlib
 import json
 import os
 from pathlib import Path
 import sys
 import tempfile
-from functools import lru_cache
-from collections.abc import Mapping
 
 from jsonschema import Draft202012Validator, FormatChecker
 
@@ -96,7 +96,10 @@ def _parse_timestamp(value: str, field_name: str) -> datetime:
 
 @lru_cache(maxsize=2)
 def _validator(schema_name: str) -> Draft202012Validator:
-    if schema_name not in {"model-request-v1.schema.json", "model-result-v1.schema.json"}:
+    if schema_name not in {
+        "model-request-v1.schema.json",
+        "model-result-v1.schema.json",
+    }:
         raise ValueError(f"unsupported schema name: {schema_name}")
     schema = _read_json(SCHEMA_DIR / schema_name)
     Draft202012Validator.check_schema(schema)
@@ -181,7 +184,10 @@ def validate_model_result(result: dict, request: dict | None = None) -> dict:
             raise ValueError("ModelResult predicted_at cannot predate ModelRequest creation.")
         requested = set(request["requested_targets"])
         for target in PREDICTION_TARGETS:
-            if target not in requested and result["probabilities"][target]["status"] == "estimated":
+            if (
+                target not in requested
+                and result["probabilities"][target]["status"] == "estimated"
+            ):
                 raise ValueError(f"ModelResult estimated unrequested target {target!r}.")
     return result
 
@@ -214,12 +220,14 @@ def build_model_result(
         raise ValueError(
             "unsupported prediction target(s): " + ", ".join(sorted(map(str, unsupported)))
         )
+    if any(not isinstance(estimate, dict) for estimate in probabilities.values()):
+        raise ValueError("each probability estimate must be an object.")
     if not isinstance(producer, dict):
         raise ValueError("producer must be an object.")
     if not isinstance(limitations, (tuple, list)):
         raise ValueError("limitations must be a list or tuple of strings.")
     if predicted_at is None:
-        predicted_at = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+        predicted_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
     result = {
         "schema_version": SCHEMA_VERSION,
@@ -278,9 +286,9 @@ def create_unresolved_result(
 
 def _atomic_write_json(document: dict, path: str | Path) -> None:
     destination = Path(path)
-    destination.parent.mkdir(parents=True, exist_ok=True)
     temporary_name = None
     try:
+        destination.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.NamedTemporaryFile(
             mode="w",
             encoding="utf-8",
