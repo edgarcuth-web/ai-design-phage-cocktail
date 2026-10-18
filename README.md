@@ -35,13 +35,14 @@ src/phage_cocktail/
   model_interface.py # ModelRequest/ModelResult validation and CLI
   resource_registry.py # exact local HostState/PhageProfile resolution
   sequence_registry.py # content-addressed host/phage FASTA resolution
+  feature_artifact.py  # feature output provenance and integrity verification
   baseline.py       # simple cocktail probability baseline
   data.py           # observed interaction-table loading/validation
   registry.py       # dataset checksum and summary verification
   split.py          # deterministic strain-level splits
   benchmark.py      # leakage-guarded pairwise/cocktail baselines
 tests/              # automated tests
-schemas/            # versioned exchange, resource and sequence registry schemas
+schemas/            # versioned exchange, resource, sequence and feature schemas
 ```
 
 ## Dataset and labels
@@ -72,6 +73,10 @@ The `phage-model-interface resolve-request-records` command resolves the exact H
 ## Sequence resource resolution
 
 The `phage-model-interface resolve-request-sequences` command resolves the host genome and phage FASTA named by validated HostState and PhageProfile records. It separately verifies raw file-byte SHA-256 and normalized sequence SHA-256, checks declared phage sequence length/accession, and rejects missing, withdrawn, tampered, or path-escaping resources. Accession-only phage references require a pinned retrieved-source snapshot and exact registry binding. It does not derive features or establish biological validity; see [`docs/sequence-registry.md`](docs/sequence-registry.md).
+
+## FeatureArtifact v1
+
+The model-side `FeatureArtifact` contract records the resolved input sequence digests, tool name/version, canonical parameter digest, pinned reference-data snapshots, output file digests, execution times, computational status and explicit limitations. The `verify-feature-artifact` command checks the manifest and re-hashes every referenced output file. This milestone adds the provenance contract only: it does not run a biological analyzer, invent feature outputs, or establish biological validity. See [`docs/feature-artifact.md`](docs/feature-artifact.md).
 
 ## Setup
 
