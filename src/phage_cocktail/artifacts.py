@@ -7,24 +7,35 @@ import json
 from pathlib import Path
 
 
-def read_json_object(path: str | Path, *, label: str = "JSON artifact") -> dict:
-    """Read a JSON object while rejecting non-standard NaN/Infinity constants."""
+def read_json_object_with_digest(
+    path: str | Path,
+    *,
+    label: str = "JSON artifact",
+) -> tuple[dict, str]:
+    """Read a JSON object and hash the exact same bytes to avoid read/hash races."""
     source = Path(path)
 
     def reject_constant(value: str):
         raise ValueError(f"non-standard JSON constant {value!r} is not allowed")
 
     try:
+        raw = source.read_bytes()
+        digest = hashlib.sha256(raw).hexdigest()
         data = json.loads(
-            source.read_text(encoding="utf-8"),
+            raw.decode("utf-8"),
             parse_constant=reject_constant,
         )
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
         raise ValueError(f"cannot read valid JSON for {label} from {source}: {exc}") from exc
     if not isinstance(data, dict):
         raise ValueError(f"{label} at {source} must contain a JSON object.")
-    return data
+    return data, digest
 
+
+def read_json_object(path: str | Path, *, label: str = "JSON artifact") -> dict:
+    """Read a JSON object while rejecting non-standard NaN/Infinity constants."""
+    document, _ = read_json_object_with_digest(path, label=label)
+    return document
 
 def canonical_json(document: dict) -> str:
     """Serialize JSON deterministically using the model/lab exchange convention."""
