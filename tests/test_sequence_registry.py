@@ -331,7 +331,7 @@ class SequenceRegistryTests(unittest.TestCase):
             manifest = load_json(fixture["sequence_registry"])
             manifest["entries"][1]["source_snapshot_sha256"] = "f" * 64
             write_json(fixture["sequence_registry"], manifest)
-            with self.assertRaisesRegex(ValueError, "no registered phage_sequence"):
+            with self.assertRaisesRegex(ValueError, "source snapshot does not match"):
                 resolve_request_sequences(
                     fixture["request"],
                     fixture["resource_registry"],
