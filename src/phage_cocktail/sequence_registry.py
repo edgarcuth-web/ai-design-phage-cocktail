@@ -305,16 +305,28 @@ def _resolve_sequence(
             if entry["kind"] == kind
             and entry["sequence_sha256"] == expected_sequence_sha256
         ]
-        if expected_accession is not None:
-            matches = [
+        if expected_accession is not None and matches:
+            accession_matches = [
                 entry for entry in matches
                 if entry.get("accession") == expected_accession
             ]
-        if expected_snapshot_sha256 is not None:
-            matches = [
+            if not accession_matches:
+                raise ValueError(
+                    f"registered {kind} sequence accession does not match "
+                    "the profile reference."
+                )
+            matches = accession_matches
+        if expected_snapshot_sha256 is not None and matches:
+            snapshot_matches = [
                 entry for entry in matches
                 if entry.get("source_snapshot_sha256") == expected_snapshot_sha256
             ]
+            if not snapshot_matches:
+                raise ValueError(
+                    f"registered {kind} sequence source snapshot does not match "
+                    "the profile provenance."
+                )
+            matches = snapshot_matches
     else:
         if (
             kind != "phage_sequence"
