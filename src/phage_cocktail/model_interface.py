@@ -63,6 +63,15 @@ def _validator(schema_name: str) -> Draft202012Validator:
     return Draft202012Validator(schema, format_checker=FormatChecker())
 
 
+def _verify_content_hash(document: dict, kind: str) -> None:
+    supplied = document.get("content_sha256")
+    expected = _content_hash(document)
+    if supplied != expected:
+        raise ValueError(
+            f"{kind} content_sha256 mismatch: expected {expected}, got {supplied!r}."
+        )
+
+
 def _validate_schema(document: dict, schema_name: str, kind: str) -> None:
     if not isinstance(document, dict):
         raise ValueError(f"{kind} must be a JSON object.")
