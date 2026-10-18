@@ -66,6 +66,19 @@ class ModelInterfaceTests(unittest.TestCase):
         cls.request = load_model_request(REQUEST_PATH)
         cls.result = load_model_result(RESULT_PATH, request=cls.request)
 
+    def test_packaged_schemas_match_canonical_repository_schemas(self):
+        canonical = ROOT / "schemas"
+        packaged = ROOT / "src" / "phage_cocktail" / "schemas"
+        for name in (
+            "model-request-v1.schema.json",
+            "model-result-v1.schema.json",
+        ):
+            self.assertEqual(
+                (packaged / name).read_bytes(),
+                (canonical / name).read_bytes(),
+                f"packaged schema {name} drifted from canonical schema",
+            )
+
     def test_shared_fixtures_validate_with_exact_lineage(self):
         self.assertEqual(self.result["request_sha256"], self.request["content_sha256"])
         self.assertEqual(self.result["host_state"], self.request["host_state"])
