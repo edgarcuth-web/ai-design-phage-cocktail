@@ -74,6 +74,11 @@ phage-model-interface validate-result tests/fixtures/model_result_v1.json \
 phage-model-interface resolve-request-records \\
   path/to/model-request.json --registry path/to/registry.v1.json
 
+phage-model-interface resolve-request-sequences \\
+  path/to/model-request.json \\
+  --registry path/to/registry.v1.json \\
+  --sequence-registry path/to/sequence-registry.v1.json
+
 phage-model-interface create-unresolved-result \
   tests/fixtures/model_request_v1.json /tmp/model-result-unresolved.json
 
@@ -98,4 +103,4 @@ The schemas are included as package data so the installed CLI does not depend on
 the repository checkout being present. CI checks the packaged copies against the
 canonical schemas in `schemas/`.
 
-The file interface and exact local HostState/PhageProfile record resolver are implemented, but biological feature resolution, model inference, training, and calibration are not. A request carries identifiers and fingerprints, not raw sequence data. The resolver verifies locally registered records and fails closed on missing, withdrawn, tampered, or mismatched entries; it does not resolve raw genome sequence assets. See [the resource registry contract](resource-registry.md).
+The file interface, exact local HostState/PhageProfile record resolver, and content-addressed FASTA resolver are implemented. Sequence resolution verifies original file-byte and normalized sequence SHA-256 digests, sequence length when declared, and profile accession when present. Accession-only phage references require a pinned retrieved-source snapshot and an exact accession/snapshot mapping in the sequence registry. These steps do not derive biological features, establish biological validity, run model inference, train models, or calibrate predictions. See [the resource registry contract](resource-registry.md) and [the sequence registry contract](sequence-registry.md).
