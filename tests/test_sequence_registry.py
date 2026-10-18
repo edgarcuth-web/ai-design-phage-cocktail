@@ -304,6 +304,41 @@ class SequenceRegistryTests(unittest.TestCase):
                     fixture["sequence_registry"],
                 )
 
+    def test_withdrawn_host_genome_is_not_resolved(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = make_fixture(directory, host_status="withdrawn")
+            with self.assertRaisesRegex(ValueError, "not available"):
+                resolve_request_sequences(
+                    fixture["request"],
+                    fixture["resource_registry"],
+                    fixture["sequence_registry"],
+                )
+
+    def test_duplicate_sequence_identity_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = make_fixture(directory)
+            manifest = load_json(fixture["sequence_registry"])
+            manifest["entries"].append(copy.deepcopy(manifest["entries"][0]))
+            write_json(fixture["sequence_registry"], manifest)
+            with self.assertRaisesRegex(ValueError, "duplicate sequence registry entry"):
+                load_sequence_registry(fixture["sequence_registry"])
+
+    def test_empty_contig_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = make_fixture(directory)
+            fixture["host_fasta"].write_bytes(
+                b">first contig\nACGT\n>empty contig\n>third contig\nNRY\n"
+            )
+            manifest = load_json(fixture["sequence_registry"])
+            manifest["entries"][0]["file_sha256"] = file_hash(fixture["host_fasta"])
+            write_json(fixture["sequence_registry"], manifest)
+            with self.assertRaisesRegex(ValueError, "empty contig"):
+                resolve_request_sequences(
+                    fixture["request"],
+                    fixture["resource_registry"],
+                    fixture["sequence_registry"],
+                )
+
     def test_path_traversal_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             fixture = make_fixture(directory)
