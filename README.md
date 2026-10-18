@@ -71,7 +71,7 @@ The `phage-model-interface resolve-request-records` command resolves the exact H
 
 ## Sequence resource resolution
 
-The `phage-model-interface resolve-request-sequences` command resolves the host genome and phage FASTA named by validated HostState and PhageProfile records. It separately verifies raw file-byte SHA-256 and normalized sequence SHA-256, checks declared phage sequence length/accession, and rejects missing, withdrawn, tampered, or path-escaping resources. Accession-only phage references fail closed. It does not derive features or establish biological validity; see [`docs/sequence-registry.md`](docs/sequence-registry.md).
+The `phage-model-interface resolve-request-sequences` command resolves the host genome and phage FASTA named by validated HostState and PhageProfile records. It separately verifies raw file-byte SHA-256 and normalized sequence SHA-256, checks declared phage sequence length/accession, and rejects missing, withdrawn, tampered, or path-escaping resources. Accession-only phage references require a pinned retrieved-source snapshot and exact registry binding. It does not derive features or establish biological validity; see [`docs/sequence-registry.md`](docs/sequence-registry.md).
 
 ## Setup
 
