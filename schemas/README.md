@@ -4,3 +4,6 @@ The canonical v1 wire schemas are `model-request-v1.schema.json` and `model-resu
 
 
 The model repository also defines the internal `feature-artifact-v1.schema.json` provenance manifest for computational feature outputs. It is not a ModelRequest/ModelResult wire schema and does not imply that a feature extractor is installed or has run. Its packaged copy under `src/phage_cocktail/schemas/` must remain byte-identical.
+
+
+`padloc-host-defense-result-v1.schema.json` defines the structured summary emitted by the first real PADLOC host-defense adapter. Its packaged copy is included through the existing `schemas/*.schema.json` package-data rule and is checked byte-for-byte in CI. It is a computational annotation contract; a `no_hits_detected` outcome is not proof that defense systems are absent.
