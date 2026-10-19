@@ -64,7 +64,7 @@ The adapter executes the native `padloc --fna ... --outdir ... --cpu ...` path. 
 
 A successful run creates:
 
-- `feature-artifact.v1.json`: the general FeatureArtifact manifest, including input/record lineage, exact PADLOC executable digest, canonical parameter digest, timestamps, pinned database version and tree digest, output digests, dependency-check evidence and limitations.
+- `feature-artifact.v1.json`: the general FeatureArtifact manifest, including input/record lineage, exact PADLOC wrapper and R analysis-script digests, canonical parameter digest, timestamps, pinned database version and tree digest, output digests, dependency-check evidence and limitations.
 - `outputs/host-defense-summary.json`: the versioned PADLOC Host Defense Result v1 summary, containing the native CSV rows when present, distinct system count, gene-hit count, system names and the native output path.
 - `outputs/padloc-native/`: native PADLOC outputs, including the CSV/GFF when systems are found and intermediate Prodigal/HMMER files produced by the tool.
 - `logs/`: PADLOC version, database version, dependency check, standard output and standard error.
