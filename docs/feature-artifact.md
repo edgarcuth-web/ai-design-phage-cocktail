@@ -42,10 +42,11 @@ sequence digest follows the lab's FASTA convention, while the file digest covers
 the exact input bytes including headers, case, wrapping and line endings.
 
 When known, the subject may also retain an accession, source-snapshot digest,
-and the sequence registry ID plus the exact registry-file digest. The two
-sequence-registry fields must be present together. The subject metadata must
-come from a sequence asset that has already passed the sequence resolver; this
-module validates the lineage fields but does not re-parse the input FASTA.
+the sequence registry ID plus the exact registry-file digest, and the content
+and raw-file digests of the upstream source record (for example, HostState).
+The two sequence-registry fields must be present together. The subject metadata
+must come from a sequence asset that has already passed the sequence resolver;
+this module validates the lineage fields but does not re-parse the input FASTA.
 
 ### Analysis provenance
 
@@ -161,10 +162,11 @@ output count. It does not print feature content or run inference.
 
 ## Next boundary
 
-The next milestone is a narrow adapter around one reviewed, real analysis tool.
-That adapter should consume a resolved sequence, execute the pinned tool,
-capture its actual outputs and logs, and create a FeatureArtifact from those
-outputs. Tool choice must be justified by the specific feature class, database
-release and license. Parsed feature records should be admitted into HostProfile
-or PhageProfile only through a separate, explicit mapping that preserves source
-evidence, uncertainty and unknown states.
+The first real adapter is [PADLOC host-defense analysis](padloc-adapter.md),
+which consumes a registry-verified host genome and pins PADLOC/PADLOC-DB v2.0.0.
+The next milestone is a separate, explicit mapping from PADLOC's native output
+into HostProfile components. That mapping must preserve source rows, coordinates,
+HMM identifiers, scores/coverage, database release and the distinction between
+not detected, not searched and unknown; it must not treat an absent call as a
+biological negative. Additional tools should be added only when their feature
+class, reference release, licensing and output semantics are clear.
