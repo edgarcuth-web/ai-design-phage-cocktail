@@ -299,6 +299,36 @@ def _read_sequence_file(path: Path, *, label: str) -> tuple[str, str, int, int]:
     return file_sha256, sequence_sha256, bases, contigs
 
 
+def fingerprint_fasta(
+    path: str | Path, *, kind: str = "host_genome"
+) -> ResolvedSequenceAsset:
+    """Validate a local FASTA and report raw/normalized fingerprints.
+
+    This helper is for reviewed ingestion and registry preparation. It does not
+    certify the source, organism identity, isolate purity, or biological validity.
+    """
+    if kind not in SEQUENCE_KINDS:
+        raise ValueError(f"unsupported sequence kind: {kind!r}.")
+    source = Path(path)
+    try:
+        resolved_path = source.resolve(strict=True)
+    except OSError as exc:
+        raise ValueError(f"FASTA file not found: {source}") from exc
+    if not resolved_path.is_file():
+        raise ValueError(f"FASTA path is not a file: {source}")
+    file_sha256, sequence_sha256, bases, contigs = _read_sequence_file(
+        resolved_path, label=kind
+    )
+    return ResolvedSequenceAsset(
+        kind=kind,
+        path=resolved_path,
+        file_sha256=file_sha256,
+        sequence_sha256=sequence_sha256,
+        bases=bases,
+        contigs=contigs,
+    )
+
+
 def _resolve_sequence(
     registry: SequenceRegistry,
     *,
