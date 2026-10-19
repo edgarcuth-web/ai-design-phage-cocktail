@@ -139,6 +139,7 @@ raise SystemExit(3)
         encoding="utf-8",
     )
     executable.chmod(0o755)
+    (root / "padloc.R").write_text("# controlled PADLOC R-script fixture\\n", encoding="utf-8")
     return executable
 
 
@@ -230,6 +231,10 @@ class PadlocAdapterTests(unittest.TestCase):
                 ["Abortive infection", "Restriction-modification"],
             )
             self.assertEqual(summary["analyzer"]["version"], PADLOC_VERSION)
+            self.assertEqual(
+                summary["analyzer"]["analysis_script_sha256"],
+                sha256_file(executable.parent / "padloc.R"),
+            )
             self.assertEqual(summary["analyzer"]["database"]["version"], PADLOC_DB_VERSION)
             self.assertEqual(
                 summary["analyzer"]["database"]["source_uri"], PADLOC_DB_RELEASE_URI
