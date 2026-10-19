@@ -340,6 +340,52 @@ def _parser() -> argparse.ArgumentParser:
         help="local sequence registry containing host/phage FASTA assets",
     )
 
+    run_padloc = commands.add_parser(
+        "annotate-host-defense-padloc",
+        help="run pinned PADLOC v2.0.0 against a registry-verified host genome",
+    )
+    run_padloc.add_argument(
+        "--host-state",
+        required=True,
+        type=Path,
+        help="validated HostState v1 JSON record",
+    )
+    run_padloc.add_argument(
+        "--sequence-registry",
+        required=True,
+        type=Path,
+        help="local sequence-registry JSON containing the exact host FASTA",
+    )
+    run_padloc.add_argument(
+        "--padloc-data",
+        required=True,
+        type=Path,
+        help="dedicated, pre-installed PADLOC-DB v2.0.0 directory",
+    )
+    run_padloc.add_argument(
+        "--outdir",
+        required=True,
+        type=Path,
+        help="new or empty output directory for this run's FeatureArtifact",
+    )
+    run_padloc.add_argument(
+        "--padloc-executable",
+        default="padloc",
+        help="PADLOC executable path or PATH command (default: padloc)",
+    )
+    run_padloc.add_argument(
+        "--cpu",
+        type=int,
+        default=1,
+        help="number of CPUs passed to PADLOC/HMMER (default: 1)",
+    )
+    run_padloc.add_argument(
+        "--timeout-seconds",
+        type=int,
+        default=7200,
+        help="maximum analysis runtime in seconds (default: 7200)",
+    )
+
     verify_feature = commands.add_parser(
         "verify-feature-artifact",
         help="validate a FeatureArtifact manifest and re-hash its output files",
@@ -398,6 +444,38 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(sequences.summary(), ensure_ascii=False, indent=2))
             return 0
 
+        if args.command == "annotate-host-defense-padloc":
+            from .padloc_adapter import run_padloc_host_defense
+
+            result = run_padloc_host_defense(
+                host_state_path=args.host_state,
+                sequence_registry_path=args.sequence_registry,
+                padloc_data_dir=args.padloc_data,
+                output_dir=args.outdir,
+                padloc_executable=args.padloc_executable,
+                cpu=args.cpu,
+                timeout_seconds=args.timeout_seconds,
+            )
+            summary = result["summary"]
+            print(
+                json.dumps(
+                    {
+                        "manifest_path": str(result["manifest_path"]),
+                        "summary_path": str(result["summary_path"]),
+                        "artifact_sha256": result["artifact"]["content_sha256"],
+                        "outcome": summary["outcome"],
+                        "systems_detected": summary["systems_detected"],
+                        "gene_hit_count": summary["gene_hit_count"],
+                        "padloc_version": summary["analyzer"]["version"],
+                        "padloc_db_version": summary["analyzer"]["database"]["version"],
+                        "padloc_db_tree_sha256": summary["analyzer"]["database"]["tree_sha256"],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
+            return 0
+
         if args.command == "verify-feature-artifact":
             from .feature_artifact import load_feature_artifact
 
@@ -422,7 +500,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         parser.error(f"unknown command: {args.command}")
-    except ValueError as exc:
+    except (ValueError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     return 2
