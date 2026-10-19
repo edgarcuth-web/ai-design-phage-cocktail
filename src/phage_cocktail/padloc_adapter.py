@@ -352,6 +352,13 @@ def run_padloc_host_defense(
     asset = resolved_genome.asset
 
     executable = _resolve_executable(padloc_executable)
+    analysis_script = executable.parent / "padloc.R"
+    if analysis_script.is_symlink() or not analysis_script.is_file():
+        raise ValueError(
+            "PADLOC R analysis script was not found next to the executable; "
+            "the adapter requires the pinned upstream padloc.R implementation."
+        )
+    analysis_script_sha256 = sha256_file(analysis_script)
     version_output = _capture([str(executable), "--version"])
     observed_version = _parse_version(
         version_output,
@@ -522,6 +529,7 @@ def run_padloc_host_defense(
             "name": "PADLOC",
             "version": observed_version,
             "executable_sha256": sha256_file(executable),
+            "analysis_script_sha256": analysis_script_sha256,
             "database": {
                 "name": "PADLOC-DB",
                 "version": observed_db_version,
@@ -590,6 +598,7 @@ def run_padloc_host_defense(
             "name": "PADLOC",
             "version": observed_version,
             "executable_sha256": sha256_file(executable),
+            "analysis_script_sha256": analysis_script_sha256,
         },
         parameters={
             "input_mode": "--fna",
@@ -622,6 +631,7 @@ def run_padloc_host_defense(
             "python_version": platform.python_version(),
             "platform": platform.platform(),
             "padloc_version_output_sha256": sha256_file(logs_dir / "padloc-version.txt"),
+            "padloc_analysis_script_sha256": analysis_script_sha256,
             "padloc_db_version_output_sha256": sha256_file(logs_dir / "padloc-db-version.txt"),
             "dependency_check_output_sha256": sha256_file(logs_dir / "padloc-check-deps.txt"),
             "dependency_check_output": check_output.strip(),
