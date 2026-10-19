@@ -27,7 +27,6 @@ from .artifacts import (
     canonical_content_sha256,
     canonical_json,
     read_json_object,
-    read_json_object_with_digest,
     sha256_file,
 )
 from .feature_artifact import build_feature_artifact, write_feature_artifact
@@ -73,18 +72,12 @@ def _timestamp() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _digest_text(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
 def _write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
-def _capture(
-    command: list[str], *, timeout_seconds: int = 60
-) -> tuple[subprocess.CompletedProcess, str]:
+def _capture(command: list[str], *, timeout_seconds: int = 60) -> str:
     try:
         completed = subprocess.run(
             command,
@@ -101,6 +94,8 @@ def _capture(
         raise ValueError(
             f"command timed out after {timeout_seconds} seconds: {command[0]!r}."
         ) from exc
+    except OSError as exc:
+        raise ValueError(f"cannot execute {command[0]!r}: {exc}") from exc
     output = (completed.stdout or "") + (completed.stderr or "")
     if completed.returncode != 0:
         tail = "\n".join(output.splitlines()[-12:])
@@ -108,7 +103,7 @@ def _capture(
             f"command failed with exit code {completed.returncode}: "
             f"{command[0]!r}. Output tail:\n{tail}"
         )
-    return completed, output
+    return output
 
 
 def _resolve_executable(executable: str | Path) -> Path:
@@ -288,11 +283,8 @@ def validate_padloc_summary(document: dict) -> dict:
     expected_outcome = "hits_detected" if records else "no_hits_detected"
     if document["outcome"] != expected_outcome:
         raise ValueError("PADLOC result summary outcome does not match records.")
-    if not records and document["native_output_path"] is not None:
-        # PADLOC normally omits the CSV entirely when it detects no systems. If
-        # a zero-row CSV is present, the native path is still retained for audit.
-        if not isinstance(document["native_output_path"], str):
-            raise ValueError("PADLOC native_output_path must be a path or null.")
+    if records and document["native_output_path"] is None:
+        raise ValueError("PADLOC result summary with hits must retain the native CSV path.")
     return document
 
 
@@ -360,7 +352,7 @@ def run_padloc_host_defense(
     asset = resolved_genome.asset
 
     executable = _resolve_executable(padloc_executable)
-    version_process, version_output = _capture([str(executable), "--version"])
+    version_output = _capture([str(executable), "--version"])
     observed_version = _parse_version(
         version_output,
         pattern=r"^\s*padloc\s+(v?\d+\.\d+\.\d+)\s*$",
@@ -376,7 +368,7 @@ def run_padloc_host_defense(
         database_root = database_root_arg.resolve(strict=True)
     except OSError as exc:
         raise ValueError(f"PADLOC data directory not found: {padloc_data_dir}") from exc
-    db_process, db_output = _capture(
+    db_output = _capture(
         [str(executable), "--data", str(database_root), "--db-version"]
     )
     observed_db_version = _parse_version(
@@ -403,7 +395,7 @@ def run_padloc_host_defense(
     _write_text(logs_dir / "padloc-version.txt", version_output)
     _write_text(logs_dir / "padloc-db-version.txt", db_output)
 
-    check_process, check_output = _capture(
+    check_output = _capture(
         [str(executable), "--check-deps"], timeout_seconds=120
     )
     _write_text(logs_dir / "padloc-check-deps.txt", check_output)
@@ -466,6 +458,8 @@ def run_padloc_host_defense(
                 f"PADLOC exceeded the {timeout_seconds}-second timeout; "
                 f"inspect {logs_dir} for partial logs."
             ) from exc
+        except OSError as exc:
+            raise ValueError(f"cannot execute PADLOC: {exc}") from exc
 
     finished_at = _timestamp()
     _write_text(logs_dir / "padloc.stdout.txt", stdout)
