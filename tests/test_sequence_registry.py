@@ -11,6 +11,7 @@ import unittest
 
 from phage_cocktail.model_interface import validate_model_request
 from phage_cocktail.sequence_registry import (
+    fingerprint_fasta,
     load_sequence_registry,
     resolve_request_sequences,
 )
@@ -195,6 +196,16 @@ def make_fixture(
 
 
 class SequenceRegistryTests(unittest.TestCase):
+    def test_fingerprint_fasta_exposes_raw_and_normalized_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fasta = Path(directory) / "host.fna"
+            fasta.write_bytes(b">contig1 description\nacgt\n")
+            asset = fingerprint_fasta(fasta, kind="host_genome")
+            self.assertEqual(asset.file_sha256, hashlib.sha256(fasta.read_bytes()).hexdigest())
+            self.assertEqual(asset.sequence_sha256, hashlib.sha256(b"\0ACGT").hexdigest())
+            self.assertEqual(asset.bases, 4)
+            self.assertEqual(asset.contigs, 1)
+
     def test_resolves_both_sequences_and_returns_audit_summary(self):
         with tempfile.TemporaryDirectory() as directory:
             fixture = make_fixture(directory)
