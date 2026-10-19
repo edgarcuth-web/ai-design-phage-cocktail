@@ -1,8 +1,0 @@
-name: phage-padloc
-channels:
-  - conda-forge
-  - bioconda
-  - padlocbio
-dependencies:
-  - python=3.11
-  - padloc=2.0.0
