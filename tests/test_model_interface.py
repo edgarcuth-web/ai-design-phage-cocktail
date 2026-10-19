@@ -75,6 +75,7 @@ class ModelInterfaceTests(unittest.TestCase):
             "resource-registry-v1.schema.json",
             "sequence-registry-v1.schema.json",
             "feature-artifact-v1.schema.json",
+            "padloc-host-defense-result-v1.schema.json",
         ):
             self.assertEqual(
                 (packaged / name).read_bytes(),
