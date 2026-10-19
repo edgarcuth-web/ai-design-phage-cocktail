@@ -205,6 +205,9 @@
         "executable_sha256": {
           "$ref": "#/$defs/sha256"
         },
+        "analysis_script_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
         "container_image_digest": {
           "type": "string",
           "pattern": "^sha256:[0-9a-f]{64}$"
