@@ -90,4 +90,4 @@ print or copy the resource records themselves.
 
 ## Next boundary
 
-The sequence-resource layer is specified in [sequence-registry.md](sequence-registry.md), and the downstream provenance manifest is defined in [FeatureArtifact v1](feature-artifact.md). Successful record or sequence resolution does not run an analyzer, derive features, or establish biological validity.
+The sequence-resource layer is specified in [sequence-registry.md](sequence-registry.md), and the provenance manifest is defined in [FeatureArtifact v1](feature-artifact.md). The first real consumer is the [PADLOC host-defense adapter](padloc-adapter.md). Successful record or sequence resolution alone does not run an analyzer, derive features, or establish biological validity.

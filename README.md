@@ -36,6 +36,7 @@ src/phage_cocktail/
   resource_registry.py # exact local HostState/PhageProfile resolution
   sequence_registry.py # content-addressed host/phage FASTA resolution
   feature_artifact.py  # feature output provenance and integrity verification
+  padloc_adapter.py    # pinned PADLOC host-defense annotation and result validation
   baseline.py       # simple cocktail probability baseline
   data.py           # observed interaction-table loading/validation
   registry.py       # dataset checksum and summary verification
@@ -43,6 +44,7 @@ src/phage_cocktail/
   benchmark.py      # leakage-guarded pairwise/cocktail baselines
 tests/              # automated tests
 schemas/            # versioned exchange, resource, sequence and feature schemas
+envs/padloc.yml       # isolated PADLOC v2.0.0 analysis environment
 ```
 
 ## Dataset and labels
@@ -76,7 +78,11 @@ The `phage-model-interface resolve-request-sequences` command resolves the host 
 
 ## FeatureArtifact v1
 
-The model-side `FeatureArtifact` contract records the resolved input sequence digests, tool name/version, canonical parameter digest, pinned reference-data snapshots, output file digests, execution times, computational status and explicit limitations. The `verify-feature-artifact` command checks the manifest and re-hashes every referenced output file. This milestone adds the provenance contract only: it does not run a biological analyzer, invent feature outputs, or establish biological validity. See [`docs/feature-artifact.md`](docs/feature-artifact.md).
+The model-side `FeatureArtifact` contract records resolved input sequence digests, upstream record lineage, tool/version, parameters, reference snapshots, output digests, execution times and explicit limitations. The `verify-feature-artifact` command checks the manifest and re-hashes every referenced output file. The first real analyzer now uses this contract; see [`docs/feature-artifact.md`](docs/feature-artifact.md).
+
+## First real analyzer: PADLOC
+
+The `annotate-host-defense-padloc` command runs the real PADLOC v2.0.0 executable against a HostState genome that has been verified through the local sequence registry. PADLOC-DB is pinned to v2.0.0; the adapter verifies both versions, hashes the installed database tree, preserves native output/logs, and emits a versioned result summary plus FeatureArtifact. A successful no-hit run is explicit and is not treated as proof that defense systems are absent. The adapter does not yet promote calls into HostProfile. See [`docs/padloc-adapter.md`](docs/padloc-adapter.md).
 
 ## Setup
 

@@ -342,6 +342,47 @@ def _validate_host_state_record(document: dict, reference: dict) -> None:
             )
 
 
+def load_host_state_record(path: str | Path) -> tuple[dict, str]:
+    """Load one standalone HostState v1 record and return it with its raw file digest.
+
+    This is useful for host-only feature analysis that should not require a
+    PhageProfile or a pairwise ModelRequest. It verifies the canonical content
+    hash and the HostState semantic contract; it does not establish biological
+    validity or resolve the referenced genome.
+    """
+    document, file_sha256 = read_json_object_with_digest(
+        path, label="HostState record"
+    )
+    if set(document) != _HOST_STATE_FIELDS:
+        raise ValueError("HostState has missing or unknown top-level fields.")
+    if type(document.get("schema_version")) is not int or document["schema_version"] != 1:
+        raise ValueError("HostState schema_version must be integer 1.")
+    expected_content_sha256 = canonical_content_sha256(document)
+    if document.get("content_sha256") != expected_content_sha256:
+        raise ValueError(
+            "HostState content_sha256 mismatch: "
+            f"expected {expected_content_sha256}, got "
+            f"{document.get('content_sha256')!r}."
+        )
+    if not _is_sha256(document.get("host_genome_sha256")):
+        raise ValueError("HostState host_genome_sha256 must be a lowercase SHA-256.")
+    reference = {
+        field: document[field]
+        for field in (
+            "record_id",
+            "content_sha256",
+            "host_profile_id",
+            "host_genome_sha256",
+            "as_of",
+        )
+    }
+    _validate_host_state_record(document, reference)
+    for field in ("host_state_id", "host_profile_id"):
+        if not isinstance(document[field], str) or not document[field].strip():
+            raise ValueError(f"HostState {field} must be a non-empty string.")
+    return document, file_sha256
+
+
 def _validate_phage_profile_record(document: dict, request: dict) -> None:
     if set(document) != _PHAGE_PROFILE_FIELDS:
         raise ValueError(

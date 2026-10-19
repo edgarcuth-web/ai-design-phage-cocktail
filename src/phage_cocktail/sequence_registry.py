@@ -75,6 +75,25 @@ class ResolvedSequenceAsset:
 
 
 @dataclass(frozen=True)
+class ResolvedRegisteredHostGenome:
+    """One verified host genome resolved without requiring a phage profile."""
+
+    sequence_registry_id: str
+    sequence_registry_file_sha256: str
+    sequence_registry_root: Path
+    asset: ResolvedSequenceAsset
+
+    def summary(self) -> dict:
+        return {
+            "sequence_registry": {
+                "registry_id": self.sequence_registry_id,
+                "file_sha256": self.sequence_registry_file_sha256,
+            },
+            "host_genome": self.asset.summary(self.sequence_registry_root),
+        }
+
+
+@dataclass(frozen=True)
 class ResolvedModelSequences:
     """Verified sequence assets tied to exact model input records."""
 
@@ -280,6 +299,36 @@ def _read_sequence_file(path: Path, *, label: str) -> tuple[str, str, int, int]:
     return file_sha256, sequence_sha256, bases, contigs
 
 
+def fingerprint_fasta(
+    path: str | Path, *, kind: str = "host_genome"
+) -> ResolvedSequenceAsset:
+    """Validate a local FASTA and report raw/normalized fingerprints.
+
+    This helper is for reviewed ingestion and registry preparation. It does not
+    certify the source, organism identity, isolate purity, or biological validity.
+    """
+    if kind not in SEQUENCE_KINDS:
+        raise ValueError(f"unsupported sequence kind: {kind!r}.")
+    source = Path(path)
+    try:
+        resolved_path = source.resolve(strict=True)
+    except OSError as exc:
+        raise ValueError(f"FASTA file not found: {source}") from exc
+    if not resolved_path.is_file():
+        raise ValueError(f"FASTA path is not a file: {source}")
+    file_sha256, sequence_sha256, bases, contigs = _read_sequence_file(
+        resolved_path, label=kind
+    )
+    return ResolvedSequenceAsset(
+        kind=kind,
+        path=resolved_path,
+        file_sha256=file_sha256,
+        sequence_sha256=sequence_sha256,
+        bases=bases,
+        contigs=contigs,
+    )
+
+
 def _resolve_sequence(
     registry: SequenceRegistry,
     *,
@@ -430,6 +479,31 @@ def _resolve_sequence(
         accession=entry.get("accession"),
         source_snapshot_sha256=entry.get("source_snapshot_sha256"),
     )
+
+def resolve_registered_host_genome(
+    sequence_registry_path: str | Path,
+    expected_sequence_sha256: str,
+) -> ResolvedRegisteredHostGenome:
+    """Resolve one exact host-genome asset from a validated local sequence registry.
+
+    Unlike resolve_request_sequences, this host-only boundary does not require a
+    PhageProfile or ModelRequest. It still verifies registry integrity, exact
+    sequence identity, original file bytes, normalized sequence digest and
+    FASTA structure.
+    """
+    registry = load_sequence_registry(sequence_registry_path)
+    asset = _resolve_sequence(
+        registry,
+        kind="host_genome",
+        expected_sequence_sha256=expected_sequence_sha256,
+    )
+    return ResolvedRegisteredHostGenome(
+        sequence_registry_id=registry.registry_id,
+        sequence_registry_file_sha256=registry.file_sha256,
+        sequence_registry_root=registry.root,
+        asset=asset,
+    )
+
 
 def resolve_request_sequences(
     request: dict,

@@ -137,6 +137,12 @@
         },
         "sequence_registry_file_sha256": {
           "$ref": "#/$defs/sha256"
+        },
+        "source_record_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_record_file_sha256": {
+          "$ref": "#/$defs/sha256"
         }
       }
     },
@@ -197,6 +203,9 @@
           "minLength": 1
         },
         "executable_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "analysis_script_sha256": {
           "$ref": "#/$defs/sha256"
         },
         "container_image_digest": {
