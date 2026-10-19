@@ -247,7 +247,7 @@ class PadlocAdapterTests(unittest.TestCase):
             )
             self.assertEqual(artifact["feature_set"], "host_defense_systems")
             self.assertEqual(artifact["status"], "complete")
-            self.assertEqual(len(artifact["outputs"]), 10)
+            self.assertEqual(len(artifact["outputs"]), 11)
             self.assertTrue((output / "outputs" / "padloc-native" / "host.domtblout").is_file())
             self.assertTrue((output / "outputs" / "padloc-native" / "host_padloc.csv").is_file())
 
