@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/edgarcuth-web/ai-design-phage-cocktail/main/schemas/padloc-host-defense-result-v1.schema.json",
+  "title": "PADLOC Host Defense Result v1",
+  "description": "Auditable summary of an actual PADLOC run against a verified host genome and pinned PADLOC-DB snapshot. No hits do not establish absence of defense systems.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_id",
+    "created_at",
+    "subject",
+    "analyzer",
+    "outcome",
+    "systems_detected",
+    "gene_hit_count",
+    "system_names",
+    "records",
+    "native_output_path",
+    "limitations",
+    "content_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "record_sha256",
+        "record_file_sha256",
+        "sequence_sha256",
+        "input_file_sha256",
+        "length_bases",
+        "contigs",
+        "sequence_registry_id",
+        "sequence_registry_file_sha256"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "record_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "record_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "sequence_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "input_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "length_bases": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "contigs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sequence_registry_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sequence_registry_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "analyzer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "executable_sha256",
+        "database"
+      ],
+      "properties": {
+        "name": {
+          "const": "PADLOC"
+        },
+        "version": {
+          "const": "v2.0.0"
+        },
+        "executable_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "database": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "version",
+            "tree_sha256",
+            "hash_method",
+            "file_count",
+            "total_bytes",
+            "source_uri"
+          ],
+          "properties": {
+            "name": {
+              "const": "PADLOC-DB"
+            },
+            "version": {
+              "const": "v2.0.0"
+            },
+            "tree_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "hash_method": {
+              "const": "sha256-canonical-json-of-sorted-relative-file-digests-v1"
+            },
+            "file_count": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "total_bytes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "source_uri": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      }
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "hits_detected",
+        "no_hits_detected"
+      ]
+    },
+    "systems_detected": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "gene_hit_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "system_names": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "native_output_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "content_sha256": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}
