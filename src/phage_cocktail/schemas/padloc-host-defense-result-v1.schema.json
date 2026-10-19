@@ -87,6 +87,7 @@
         "name",
         "version",
         "executable_sha256",
+        "analysis_script_sha256",
         "database"
       ],
       "properties": {
@@ -97,6 +98,9 @@
           "const": "v2.0.0"
         },
         "executable_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "analysis_script_sha256": {
           "$ref": "#/$defs/sha256"
         },
         "database": {
