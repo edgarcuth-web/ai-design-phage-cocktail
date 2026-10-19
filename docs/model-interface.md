@@ -1,106 +1,82 @@
-# External model exchange v1
+# Model exchange boundary
 
-The self-driving lab owns the scientific input records and result admission. This
-repository owns data, feature extraction, training, evaluation, calibration,
-model artifacts and inference. The exchange is versioned JSON; the repositories
-do not import each other's private Python modules.
+This repository owns model-ready datasets, model-specific preprocessing and
+representations, training, evaluation, calibration, model artifacts and inference.
+It does not own biological characterization, source-record resolution, raw FASTA
+ingestion, PADLOC or other scientific annotation tools. Those responsibilities
+belong to `self-driving-lab-for-phage-therapy`.
 
-## Machine-readable contract
+The current ModelRequest v1 / ModelResult v1 interface is transitional. The target
+boundary is an immutable, content-addressed `ModelInputBundle v1` produced by SDL.
+That bundle should carry admitted scientific annotations, explicit screening and
+missingness states, field-level provenance, and exact source fingerprints. This
+repository will then perform only model-specific transformation and inference
+against that frozen input.
+
+## Wire schemas
 
 - [ModelRequest v1 JSON Schema](../schemas/model-request-v1.schema.json)
 - [ModelResult v1 JSON Schema](../schemas/model-result-v1.schema.json)
-- [Request conformance fixture](../tests/fixtures/model_request_v1.json)
-- [Result conformance fixture](../tests/fixtures/model_result_v1.json)
-- [Local resource registry v1](resource-registry.md)
+- [ModelRequest fixture](../tests/fixtures/model_request_v1.json)
+- [ModelResult fixture](../tests/fixtures/model_result_v1.json)
 
-The lab repository mirrors these schema files under its own `schemas/` directory.
-The schema `$id` values point to this repository's canonical paths on `main`.
-Schema changes must be coordinated across both repositories and keep the shared
-fixtures in sync.
+The schemas are mirrored in the SDL repository so both sides can validate the
+same wire format. Changes must be coordinated. Schema validation checks the wire
+shape; the Python interface additionally checks content hashes, record-ID
+equality, exact request/result lineage, timestamp ordering and requested-target
+admission.
 
-## ModelRequest
+## Current v1 semantics
 
-A request contains:
+A ModelRequest binds one exact HostState content hash, one exact PhageProfile
+content fingerprint and the prediction targets being requested. A ModelResult
+echoes the exact request ID and SHA-256, the same host/phage fingerprints, all
+three target slots, producer identity, immutable model artifact SHA-256,
+limitations, explanation and prediction time. Targets that were not requested
+must remain `not_estimated`.
 
-- a content-addressed HostState reference, including the exact state hash and
-  host genome hash;
-- the PhageProfile ID and content fingerprint;
-- a non-empty, unique list of requested targets;
-- request ID, record ID, creation time, schema version and content SHA-256.
+This version does not carry the complete scientific characterization bundle yet.
+Do not infer that a missing annotation is biologically negative. In particular,
+PADLOC `no_hits_detected` means no calls were detected by that pinned analysis
+run; it is not evidence that the host lacks anti-phage defense systems. Until
+ModelInputBundle v1 is implemented, the model must not attempt to resolve local
+HostState, PhageProfile or sequence-registry paths.
 
-The request intentionally carries identifiers and fingerprints, not raw host or
-phage sequence data. The model implementation must resolve approved local
-resources or fail explicitly; it must not invent features from IDs alone.
+## CLI
 
-## ModelResult
-
-A result must echo the exact request ID and request SHA-256, preserve the same
-HostState and PhageProfile lineage, and include exactly three target slots:
-`adsorption`, `productive_infection`, and `resistance_emergence`.
-
-Each target is either:
-
-- `not_estimated`, with probability and uncertainty fields set to `null`; or
-- `estimated`, with a probability in [0, 1], an uncertainty interval, and a
-  non-empty uncertainty-method description.
-
-Any estimated target requires a non-null immutable model artifact SHA-256 in
-`producer.artifact_sha256`. Targets that were not requested must remain
-`not_estimated`.
-
-## Schema validation versus admission
-
-JSON Schema validates the wire shape and local field constraints. It cannot by
-itself prove that content hashes are correct, that `record_id` equals the
-corresponding ID, that a result echoes the exact request, or that the requested
-targets match the estimated outputs. The lab's semantic validator remains the
-authoritative admission gate for those cross-record constraints.
-
-The fixture values are software conformance examples only. They are not
-biological predictions and must not be used as training data or scientific
-evidence.
-
-## File-based CLI
-
-Install the project, then use the interface CLI:
+Validate a request:
 
 ```bash
-pip install -e ".[dev]"
-
 phage-model-interface validate-request tests/fixtures/model_request_v1.json
-phage-model-interface validate-result tests/fixtures/model_result_v1.json \
-  --request tests/fixtures/model_request_v1.json
-
-phage-model-interface resolve-request-records \\
-  path/to/model-request.json --registry path/to/registry.v1.json
-
-phage-model-interface resolve-request-sequences \\
-  path/to/model-request.json \\
-  --registry path/to/registry.v1.json \\
-  --sequence-registry path/to/sequence-registry.v1.json
-
-phage-model-interface create-unresolved-result \
-  tests/fixtures/model_request_v1.json /tmp/model-result-unresolved.json
-
-phage-model-interface validate-result /tmp/model-result-unresolved.json \
-  --request tests/fixtures/model_request_v1.json
-
-pytest
 ```
 
-`validate-request` and `validate-result` check JSON Schema, canonical content
-hashes, derived record IDs, timestamp ordering, and (when the request is supplied)
-exact request/result lineage and target scope. Output files are written atomically
-only after validation.
+Validate a result against its exact request:
 
-`create-unresolved-result` is an explicit transport smoke test, not an inference
-command. It writes all three targets as `not_estimated`, uses no model artifact
-digest, and records why no estimate was made. Missing files, malformed JSON,
-unsupported target names, estimated unrequested targets, invalid uncertainty
-intervals, and estimated outputs without a model artifact are rejected.
+```bash
+phage-model-interface validate-result tests/fixtures/model_result_v1.json \
+  --request tests/fixtures/model_request_v1.json
+```
 
-The schemas are included as package data so the installed CLI does not depend on
-the repository checkout being present. CI checks the packaged copies against the
-canonical schemas in `schemas/`.
+Create an explicit unresolved result without running inference:
 
-The file interface, exact local HostState/PhageProfile record resolver, and content-addressed FASTA resolver are implemented. Sequence resolution verifies original file-byte and normalized sequence SHA-256 digests, sequence length when declared, and profile accession when present. Accession-only phage references require a pinned retrieved-source snapshot and an exact accession/snapshot mapping in the sequence registry. These steps do not derive biological features, establish biological validity, run model inference, train models, or calibrate predictions. See [the resource registry contract](resource-registry.md) and [the sequence registry contract](sequence-registry.md).
+```bash
+phage-model-interface create-unresolved-result \
+  tests/fixtures/model_request_v1.json /tmp/model-result-unresolved.json
+```
+
+The unresolved command never fabricates probabilities. All three targets remain
+`not_estimated` unless an actual model implementation is integrated and its
+outputs pass the same validation contract.
+
+## Model-specific artifacts
+
+Embeddings, tokenizer output, graph representations, normalization parameters,
+training tensors, split assignments, model checkpoints, calibration artifacts and
+inference outputs belong here because their meaning depends on a specific model or
+training pipeline. They must be versioned and tied to the exact input bundle,
+preprocessing configuration and model artifact digest.
+
+Scientific annotations such as receptor/surface characterization, PADLOC defense
+calls, phage RBP annotations and experimentally observed phenotypes do not belong
+here. SDL stores those records with source provenance; this repository consumes a
+frozen export rather than reimplementing the biology.

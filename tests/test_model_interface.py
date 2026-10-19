@@ -72,10 +72,6 @@ class ModelInterfaceTests(unittest.TestCase):
         for name in (
             "model-request-v1.schema.json",
             "model-result-v1.schema.json",
-            "resource-registry-v1.schema.json",
-            "sequence-registry-v1.schema.json",
-            "feature-artifact-v1.schema.json",
-            "padloc-host-defense-result-v1.schema.json",
         ):
             self.assertEqual(
                 (packaged / name).read_bytes(),

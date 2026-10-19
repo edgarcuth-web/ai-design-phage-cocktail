@@ -33,18 +33,13 @@ notebooks/          # exploration and experiments
 src/phage_cocktail/
   artifacts.py      # canonical JSON hashes and raw-file digests
   model_interface.py # ModelRequest/ModelResult validation and CLI
-  resource_registry.py # exact local HostState/PhageProfile resolution
-  sequence_registry.py # content-addressed host/phage FASTA resolution
-  feature_artifact.py  # feature output provenance and integrity verification
-  padloc_adapter.py    # pinned PADLOC host-defense annotation and result validation
   baseline.py       # simple cocktail probability baseline
   data.py           # observed interaction-table loading/validation
   registry.py       # dataset checksum and summary verification
   split.py          # deterministic strain-level splits
   benchmark.py      # leakage-guarded pairwise/cocktail baselines
 tests/              # automated tests
-schemas/            # versioned exchange, resource, sequence and feature schemas
-envs/padloc.yml       # isolated PADLOC v2.0.0 analysis environment
+schemas/            # ModelRequest/ModelResult wire schemas
 ```
 
 ## Dataset and labels
@@ -62,27 +57,11 @@ An absent pair is unknown/unobserved, not a negative label. See
 
 ## External model exchange contract
 
-The file-based boundary to the self-driving lab is defined by the v1 JSON Schemas in [`schemas/`](schemas/) and documented in [`docs/model-interface.md`](docs/model-interface.md). Shared fixtures are validated in CI. This is currently a wire-contract milestone, not an inference implementation: no biological prediction is emitted by these fixtures.
+The file-based boundary to the self-driving lab is currently defined by the transitional ModelRequest v1 / ModelResult v1 schemas in [`schemas/`](schemas/) and documented in [`docs/model-interface.md`](docs/model-interface.md). Shared fixtures are validated in CI. The intended next boundary is an SDL-produced, immutable ModelInputBundle; this repository should consume the bundle rather than resolve lab records or raw FASTA paths.
 
 ## File-based model interface
 
 The model exchange CLI validates the shared `ModelRequest v1` and `ModelResult v1` contracts. It does not run inference. After installing the project, run `phage-model-interface --help` for commands, or see [`docs/model-interface.md`](docs/model-interface.md) for a request/result round trip and explicit unresolved response behavior.
-
-## Model resource resolution
-
-The `phage-model-interface resolve-request-records` command resolves the exact HostState and PhageProfile JSON records named by a ModelRequest through an explicit local registry. It verifies record IDs, canonical content hashes, raw file hashes and request lineage, and rejects path traversal or withdrawn/mismatched resources. No production resource registry or biological records are bundled. This step does not resolve genome sequence files or establish biological validity; see [`docs/resource-registry.md`](docs/resource-registry.md).
-
-## Sequence resource resolution
-
-The `phage-model-interface resolve-request-sequences` command resolves the host genome and phage FASTA named by validated HostState and PhageProfile records. It separately verifies raw file-byte SHA-256 and normalized sequence SHA-256, checks declared phage sequence length/accession, and rejects missing, withdrawn, tampered, or path-escaping resources. Accession-only phage references require a pinned retrieved-source snapshot and exact registry binding. It does not derive features or establish biological validity; see [`docs/sequence-registry.md`](docs/sequence-registry.md).
-
-## FeatureArtifact v1
-
-The model-side `FeatureArtifact` contract records resolved input sequence digests, upstream record lineage, tool/version, parameters, reference snapshots, output digests, execution times and explicit limitations. The `verify-feature-artifact` command checks the manifest and re-hashes every referenced output file. The first real analyzer now uses this contract; see [`docs/feature-artifact.md`](docs/feature-artifact.md).
-
-## First real analyzer: PADLOC
-
-The `annotate-host-defense-padloc` command runs the real PADLOC v2.0.0 executable against a HostState genome that has been verified through the local sequence registry. PADLOC-DB is pinned to v2.0.0; the adapter verifies both versions, hashes the installed database tree, preserves native output/logs, and emits a versioned result summary plus FeatureArtifact. A successful no-hit run is explicit and is not treated as proof that defense systems are absent. The adapter does not yet promote calls into HostProfile. See [`docs/padloc-adapter.md`](docs/padloc-adapter.md).
 
 ## Setup
 

@@ -291,7 +291,7 @@ def write_model_result(
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="phage-model-interface",
-        description="Validate v1 exchange files; this CLI does not run biological inference.",
+        description="Validate the versioned model exchange and emit explicit unresolved results; no biological annotation is run here.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
 
@@ -309,88 +309,6 @@ def _parser() -> argparse.ArgumentParser:
         type=Path,
         help="also verify exact request/result lineage and requested-target scope",
     )
-
-    resolve_records = commands.add_parser(
-        "resolve-request-records",
-        help="resolve exact HostState and PhageProfile records from a local registry",
-    )
-    resolve_records.add_argument("request", type=Path)
-    resolve_records.add_argument(
-        "--registry",
-        required=True,
-        type=Path,
-        help="local resource-registry JSON manifest",
-    )
-
-    resolve_sequences = commands.add_parser(
-        "resolve-request-sequences",
-        help="resolve exact host-genome and phage-sequence FASTA assets",
-    )
-    resolve_sequences.add_argument("request", type=Path)
-    resolve_sequences.add_argument(
-        "--registry",
-        required=True,
-        type=Path,
-        help="local resource registry containing HostState and PhageProfile JSON",
-    )
-    resolve_sequences.add_argument(
-        "--sequence-registry",
-        required=True,
-        type=Path,
-        help="local sequence registry containing host/phage FASTA assets",
-    )
-
-    run_padloc = commands.add_parser(
-        "annotate-host-defense-padloc",
-        help="run pinned PADLOC v2.0.0 against a registry-verified host genome",
-    )
-    run_padloc.add_argument(
-        "--host-state",
-        required=True,
-        type=Path,
-        help="validated HostState v1 JSON record",
-    )
-    run_padloc.add_argument(
-        "--sequence-registry",
-        required=True,
-        type=Path,
-        help="local sequence-registry JSON containing the exact host FASTA",
-    )
-    run_padloc.add_argument(
-        "--padloc-data",
-        required=True,
-        type=Path,
-        help="dedicated, pre-installed PADLOC-DB v2.0.0 directory",
-    )
-    run_padloc.add_argument(
-        "--outdir",
-        required=True,
-        type=Path,
-        help="new or empty output directory for this run's FeatureArtifact",
-    )
-    run_padloc.add_argument(
-        "--padloc-executable",
-        default="padloc",
-        help="PADLOC executable path or PATH command (default: padloc)",
-    )
-    run_padloc.add_argument(
-        "--cpu",
-        type=int,
-        default=1,
-        help="number of CPUs passed to PADLOC/HMMER (default: 1)",
-    )
-    run_padloc.add_argument(
-        "--timeout-seconds",
-        type=int,
-        default=7200,
-        help="maximum analysis runtime in seconds (default: 7200)",
-    )
-
-    verify_feature = commands.add_parser(
-        "verify-feature-artifact",
-        help="validate a FeatureArtifact manifest and re-hash its output files",
-    )
-    verify_feature.add_argument("artifact", type=Path)
 
     unresolved = commands.add_parser(
         "create-unresolved-result",
@@ -421,69 +339,6 @@ def main(argv: list[str] | None = None) -> int:
             print(
                 f"valid ModelResult v{result['schema_version']}{suffix}: "
                 f"{result['result_id']} sha256={result['content_sha256']}"
-            )
-            return 0
-
-        if args.command == "resolve-request-records":
-            from .resource_registry import resolve_request_records
-
-            request = load_model_request(args.request)
-            resources = resolve_request_records(request, args.registry)
-            print(json.dumps(resources.summary(), ensure_ascii=False, indent=2))
-            return 0
-
-        if args.command == "resolve-request-sequences":
-            from .sequence_registry import resolve_request_sequences
-
-            request = load_model_request(args.request)
-            sequences = resolve_request_sequences(
-                request,
-                args.registry,
-                args.sequence_registry,
-            )
-            print(json.dumps(sequences.summary(), ensure_ascii=False, indent=2))
-            return 0
-
-        if args.command == "annotate-host-defense-padloc":
-            from .padloc_adapter import run_padloc_host_defense
-
-            result = run_padloc_host_defense(
-                host_state_path=args.host_state,
-                sequence_registry_path=args.sequence_registry,
-                padloc_data_dir=args.padloc_data,
-                output_dir=args.outdir,
-                padloc_executable=args.padloc_executable,
-                cpu=args.cpu,
-                timeout_seconds=args.timeout_seconds,
-            )
-            summary = result["summary"]
-            print(
-                json.dumps(
-                    {
-                        "manifest_path": str(result["manifest_path"]),
-                        "summary_path": str(result["summary_path"]),
-                        "artifact_sha256": result["artifact"]["content_sha256"],
-                        "outcome": summary["outcome"],
-                        "systems_detected": summary["systems_detected"],
-                        "gene_hit_count": summary["gene_hit_count"],
-                        "padloc_version": summary["analyzer"]["version"],
-                        "padloc_db_version": summary["analyzer"]["database"]["version"],
-                        "padloc_db_tree_sha256": summary["analyzer"]["database"]["tree_sha256"],
-                    },
-                    ensure_ascii=False,
-                    indent=2,
-                )
-            )
-            return 0
-
-        if args.command == "verify-feature-artifact":
-            from .feature_artifact import load_feature_artifact
-
-            artifact = load_feature_artifact(args.artifact, verify_outputs=True)
-            print(
-                f"valid FeatureArtifact v{artifact['schema_version']}: "
-                f"{artifact['artifact_id']} sha256={artifact['content_sha256']} "
-                f"status={artifact['status']} outputs={len(artifact['outputs'])}"
             )
             return 0
 
