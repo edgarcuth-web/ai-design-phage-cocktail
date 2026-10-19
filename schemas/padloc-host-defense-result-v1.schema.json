@@ -167,6 +167,30 @@
       "type": "array",
       "items": {
         "type": "object",
+        "required": [
+          "system.number",
+          "seqid",
+          "system",
+          "target.name"
+        ],
+        "properties": {
+          "system.number": {
+            "type": "string",
+            "minLength": 1
+          },
+          "seqid": {
+            "type": "string",
+            "minLength": 1
+          },
+          "system": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target.name": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
         "additionalProperties": {
           "type": [
             "string",
