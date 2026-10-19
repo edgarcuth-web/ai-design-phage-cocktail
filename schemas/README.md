@@ -1,9 +1,12 @@
 # Model exchange schemas
 
-The canonical v1 wire schemas are `model-request-v1.schema.json` and `model-result-v1.schema.json`. The lab repository mirrors these files and uses the same conformance fixtures. Update both copies together; cross-record hashes, lineage, timestamps, and target-scope admission remain enforced by the lab's semantic contract.
+`model-request-v1.schema.json` and `model-result-v1.schema.json` define the
+versioned wire boundary between this repository and
+`self-driving-lab-for-phage-therapy`. The same schema bytes are mirrored in the
+SDL repository and checked by tests.
 
-
-The model repository also defines the internal `feature-artifact-v1.schema.json` provenance manifest for computational feature outputs. It is not a ModelRequest/ModelResult wire schema and does not imply that a feature extractor is installed or has run. Its packaged copy under `src/phage_cocktail/schemas/` must remain byte-identical.
-
-
-`padloc-host-defense-result-v1.schema.json` defines the structured summary emitted by the first real PADLOC host-defense adapter. Its packaged copy is included through the existing `schemas/*.schema.json` package-data rule and is checked byte-for-byte in CI. It is a computational annotation contract; a `no_hits_detected` outcome is not proof that defense systems are absent.
+Scientific characterization and its schemas—including sequence registries,
+FeatureArtifact provenance, and PADLOC result summaries—are owned by SDL and are
+not part of this model repository. Model-specific representations, preprocessing
+configurations, training/evaluation records, checkpoints and calibration artifacts
+belong here.
