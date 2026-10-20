@@ -81,3 +81,21 @@ def split_by_bacterium(
         raise RuntimeError("failed to assign one or more bacterial strains")
 
     return result
+
+
+def split_by_host_group(frame: pd.DataFrame, groups: dict[str, str], *, seed: int = 42,
+                        fractions=(0.70, 0.15, 0.15)) -> pd.DataFrame:
+    """Assign whole host groups, preserving the legacy split implementation."""
+    validate_interactions(frame)
+    hosts = set(frame.bacterium.astype(str))
+    if hosts - set(groups) or any(not isinstance(groups[h], str) or not groups[h] for h in hosts):
+        raise ValueError("every bacterial strain requires a non-empty host group")
+    representatives = sorted(set(groups[h] for h in hosts),
+                             key=lambda group: (_fnv1a_32(f"{seed}:{group}"), group))
+    n_train, n_validation, _ = _split_counts(len(representatives), tuple(fractions))
+    assignment = {g: ("train" if i < n_train else "validation" if i < n_train + n_validation else "test")
+                  for i, g in enumerate(representatives)}
+    result = frame.copy()
+    result["host_group"] = result.bacterium.map(groups)
+    result["split"] = result.host_group.map(assignment)
+    return result

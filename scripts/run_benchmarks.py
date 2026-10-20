@@ -15,6 +15,11 @@ MANIFEST_PATH = REPOSITORY_ROOT / "data/registry/genophi_ecoli_subset.v1.json"
 
 
 def main() -> None:
+    print(
+        "Historical source-coded benchmark: the MLC audit found 41 zeros with "
+        "missing primary readings. Use scripts/run_host_baseline.py for the "
+        "curated observed-label, genomic-group evaluation."
+    )
     verified = verify_registered_dataset(MANIFEST_PATH)
     frame = load_interactions(verified.path)
     assigned = split_by_bacterium(frame, seed=42)

@@ -11,10 +11,11 @@ existing phage, then evaluate on unseen strains with possibly known phages.
 The task, label evidence, generalization limits and acceptance criteria are in
 [`docs/first-model-task.md`](docs/first-model-task.md).
 
-Current delivery: dataset/baseline infrastructure and a working file-based input
-and result boundary. No trained host-aware model or calibrated inference is
-included. Pairwise matrices and offline union-coverage baselines do not establish
-cocktail efficacy.
+Current delivery: a working file-based model boundary, a real-data label/genome
+audit and frozen host-feature development weights. The first host model did not
+meet the criterion for improving over per-phage prevalence; its outputs remain
+uncalibrated research scores. See [the study report](docs/host-baseline-results.md).
+Pairwise matrices and offline union coverage do not establish cocktail efficacy.
 
 ## Repository layout
 
@@ -24,6 +25,8 @@ data/
   processed/        # cleaned/model-ready data; not committed
   registry/         # versioned dataset manifests and label semantics
   endpoints/        # explicit source-label endpoint descriptors
+  studies/          # frozen protocols, resource locks and audit reports
+models/             # frozen development JSON weights and model card
 notebooks/          # exploration and experiments
 src/phage_cocktail/
   artifacts.py      # canonical JSON hashes and raw-file digests
@@ -34,6 +37,9 @@ src/phage_cocktail/
   registry.py       # dataset checksum and summary verification
   split.py          # deterministic strain-level splits
   benchmark.py      # leakage-guarded pairwise/cocktail baselines
+  cohort.py         # published MLC reconciliation and genomic host grouping
+  host_baseline.py  # train-only preprocessing and known-phage logistic baseline
+  host_study.py     # locked real-data audit/training/evaluation runner
 tests/              # automated tests
 schemas/            # bundle/pair-result and legacy request/result wire schemas
 ```
@@ -44,10 +50,12 @@ The first dataset is the pinned GenoPHI E. coli subset. The fetch script verifie
 the registered SHA-256, and analysis scripts verify the checksum and summary
 statistics before use.
 
-The canonical `infection` column currently represents the source-encoded binary
-interaction label. Its exact assay definition and mapping to adsorption,
-productive infection, or resistance-emergence targets are **not yet verified**.
-An absent pair is unknown/unobserved, not a negative label. See
+The canonical `infection` column represents a source-coded binary label. A later
+row-level audit found **41 zeros whose primary MLC readings are missing**. The
+new study excludes these, retaining 16,597 observed labels that exactly match
+`MLC > 0`. The target combines source spotting-assay categories; a mapping to
+adsorption, productive infection or resistance emergence remains unverified.
+See [the audit](docs/host-baseline-results.md),
 [`docs/dataset_contract.md`](docs/dataset_contract.md) and
 [`data/README.md`](data/README.md).
 
@@ -92,7 +100,7 @@ python scripts/explore_interactions.py
 
 For interactive exploration, open `notebooks/01_explore_interactions.ipynb`.
 
-## Step 2: leakage-safe baseline benchmark
+## Step 2: historical binary-matrix benchmark
 
 ```bash
 python scripts/run_benchmarks.py
@@ -106,14 +114,32 @@ so this measures generalization to unseen strains with known phages, not unseen
 phages. Cocktail coverage evaluation fails if selected-phage/test-strain pairs
 are missing rather than treating missing outcomes as negatives.
 
-Existing benchmark results and their interpretation are recorded in
+These historical results include the 41 source-coded unknowns and are retained
+for reproducibility. Use the audited, genomically grouped study below for new
+observed-label evaluation. Historical results and their interpretation are in
 [`docs/step2_benchmark.md`](docs/step2_benchmark.md).
 
-## Step 3A: reproduce a genome-aware reference
+## First observed-label host-feature study
 
-Before building a custom genome model, reproduce GenoPHI's official 25-strain x
-25-phage protein-family demo. This verifies the complete path from protein FASTA
-files through MMseqs2-derived features to strain-separated prediction.
+```bash
+python scripts/run_host_baseline.py --fetch --outdir artifacts/host_baseline_v1
+```
+
+This verifies 177 host genomes, 94 phage genomes and all annotation/source tables
+(approximately 920 MB), excludes unknown MLC readings, freezes host groups and
+fits the [fixed protocol](docs/host-baseline-protocol.md). Existing run directories
+and tampered input files are rejected. Weights, metrics, row predictions and
+provenance are saved together. Frozen development weights are in `models/`.
+
+Test AP is 0.5413 versus 0.4952 for per-phage prevalence; the paired 95% AP-gain
+interval is [-0.0229, 0.1092]. This is inconclusive, and Brier/log loss are worse.
+See [the full report](docs/host-baseline-results.md) for the split and limitations.
+
+## Optional GenoPHI genome-aware reference
+
+GenoPHI's official 25-strain x 25-phage protein-family demo can verify the path
+from protein FASTA files through MMseqs2-derived features to strain-separated
+prediction.
 
 On Linux/macOS, or inside WSL2 on Windows:
 
@@ -139,12 +165,16 @@ GenoPHI is pinned to version 1.0.3 and its demo data to commit
 - [x] Wire in the official GenoPHI genome-aware reference workflow
 - [x] Define the first pairwise task and preserve unverified assay semantics
 - [x] Consume frozen input bundles and return exact source-endpoint results
-- [ ] Verify the source assay definition and license terms
+- [x] Reconcile source binary labels with published MLC readings and exclude unknowns
+- [x] Verify all cohort genomes and supplied biological annotations
+- [x] Freeze genomic host groups and run a fixed host-feature baseline
+- [x] Report paired host-group uncertainty, including an inconclusive result
+- [ ] Finish row-level assay-context and separate dataset-license review
 - [ ] Reproduce GenoPHI demo metrics locally
 - [ ] Define target-specific label mapping before training mechanistic targets
-- [ ] Train and calibrate a host-aware model on the fixed benchmark
+- [ ] Demonstrate improvement and validate calibration before model promotion
 - [ ] Evaluate generalization to unseen phages separately
-- [ ] Add grouped repeated evaluation and uncertainty intervals
+- [ ] Add repeated group evaluation and an independent release holdout
 
 ## Scope
 

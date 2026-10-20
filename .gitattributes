@@ -1,0 +1,2 @@
+# Keep generated numerical weights collapsed in source reviews.
+models/*.json linguist-generated=true
