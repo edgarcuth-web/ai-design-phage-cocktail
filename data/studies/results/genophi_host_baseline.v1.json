@@ -1,0 +1,168 @@
+{
+  "study_id": "genophi-host-baseline:v1",
+  "provenance": {
+    "protocol_sha256": "b717e0c5a5c788f19be84d441548fa0a89b111065827df9b39783ea6fecb12bf",
+    "resource_lock_sha256": "952c969be8cf52c79e89c06d5acdb0acd759e3f7c58665a623b7dd6ac3964fed",
+    "code_base_revision": "a5afe1743c9b69a89fa9c94a25a6384cf44b4757",
+    "code_files_sha256": {
+      "src/phage_cocktail/host_study.py": "d2412a868194db6dd69ff7f009ea1630039c6606d56eb7582306c74e18d9cbf8",
+      "src/phage_cocktail/cohort.py": "f7350aede86b009d2bc446639e98066df97a285bb411afc7111cb8cde1c04429",
+      "src/phage_cocktail/host_baseline.py": "ee0b930f305cfe04fb41dca0693a3b74220f9f9059d71d2b74c179c39191e638",
+      "src/phage_cocktail/split.py": "1df34b65fa6735cad6545c7dad4a471aca91f30e28c65b061e95fc28bd131ca5",
+      "src/phage_cocktail/benchmark.py": "9e8b8b4e9a586dfd8e656b617827ad1f702870a59bddff1c971f199add5befb6",
+      "src/phage_cocktail/data.py": "7ed230c370d99cd451929171ce2a8db76a245d1e1455c37cdeef1f1db366e916",
+      "src/phage_cocktail/registry.py": "21b9a2052906fecf0328ad89029a17d78821fd62704bf03cef0a52ab300e12d2",
+      "src/phage_cocktail/artifacts.py": "e6897f728c5cdf66f207aeb36edfcbd8fd513d662c1e3cef40ffedfc95994c08",
+      "scripts/run_host_baseline.py": "f3b98d96e43fe4ec695e810103d34ef32a89a1837d924cfa46b796a6b8ff8e9b"
+    },
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.5.4",
+      "pandas": "2.3.3",
+      "scikit_learn": "1.9.1"
+    }
+  },
+  "audit": {
+    "candidate_pairs": 16638,
+    "observed_pairs": 16597,
+    "unknown_pairs_excluded": 41,
+    "known_binary_disagreements": 0,
+    "original_missing_encoded_zero": 41,
+    "source_mlc_counts": {
+      "0": 12784,
+      "1": 1492,
+      "2": 1041,
+      "3": 680,
+      "4": 600
+    },
+    "missing_by_host": {
+      "370D": 39,
+      "ECOR53": 2
+    },
+    "host_genomes_verified": 177,
+    "phage_genomes_verified": 94,
+    "unique_host_assemblies": 177,
+    "unique_phage_assemblies": 89,
+    "defense_features": 137,
+    "categorical_features": [
+      "O-type",
+      "H-type",
+      "LPS_type",
+      "ABC_serotype"
+    ]
+  },
+  "split": {
+    "test": {
+      "hosts": 34,
+      "groups": 22,
+      "pairs": 3196,
+      "positive": 849
+    },
+    "train": {
+      "hosts": 117,
+      "groups": 103,
+      "pairs": 10957,
+      "positive": 2473
+    },
+    "validation": {
+      "hosts": 26,
+      "groups": 22,
+      "pairs": 2444,
+      "positive": 491
+    }
+  },
+  "metrics": [
+    {
+      "partition": "validation",
+      "model": "coin_flip_0.5",
+      "auroc": 0.5,
+      "average_precision": 0.20090016366612112,
+      "brier": 0.25,
+      "log_loss": 0.6931471805599453
+    },
+    {
+      "partition": "validation",
+      "model": "global_prevalence",
+      "auroc": 0.5,
+      "average_precision": 0.20090016366612112,
+      "brier": 0.16115434287390962,
+      "log_loss": 0.5034561711562171
+    },
+    {
+      "partition": "validation",
+      "model": "phage_prevalence",
+      "auroc": 0.8056397646109229,
+      "average_precision": 0.5327895453890384,
+      "brier": 0.12699536129501188,
+      "log_loss": 0.4022845212594404
+    },
+    {
+      "partition": "validation",
+      "model": "host_logistic",
+      "auroc": 0.7968523020096505,
+      "average_precision": 0.5161762535167487,
+      "brier": 0.13581446754550902,
+      "log_loss": 0.4247129653577829
+    },
+    {
+      "partition": "test",
+      "model": "coin_flip_0.5",
+      "auroc": 0.5,
+      "average_precision": 0.26564455569461826,
+      "brier": 0.25,
+      "log_loss": 0.6931471805599453
+    },
+    {
+      "partition": "test",
+      "model": "global_prevalence",
+      "auroc": 0.5,
+      "average_precision": 0.26564455569461826,
+      "brier": 0.19667305606942814,
+      "log_loss": 0.5832698235476412
+    },
+    {
+      "partition": "test",
+      "model": "phage_prevalence",
+      "auroc": 0.7585060847544645,
+      "average_precision": 0.4951885411152286,
+      "brier": 0.16551278044342727,
+      "log_loss": 0.4986738632560153
+    },
+    {
+      "partition": "test",
+      "model": "host_logistic",
+      "auroc": 0.7735396865306337,
+      "average_precision": 0.5413268596707465,
+      "brier": 0.16811969594675824,
+      "log_loss": 0.5215294529121541
+    }
+  ],
+  "primary_comparison": {
+    "delta_average_precision": 0.046138318555517865,
+    "interval": [
+      -0.022898218757045726,
+      0.10922575705401637
+    ],
+    "confidence_level": 0.95,
+    "groups": 22,
+    "requested_resamples": 2000,
+    "valid_resamples": 2000,
+    "single_class_resamples": 0,
+    "seed": 20261019,
+    "improvement_supported": false
+  },
+  "single_class_fallback_phages": [
+    "BCH953_P3"
+  ],
+  "artifacts_sha256": {
+    "excluded_pairs.csv": "cf45ec993e669860dabcbef0665f47c9e33e94e8b3b67f89baf9e8ae287cd3c5",
+    "host_features.csv": "d8f377e1cee9a48f0e4d47c99ef65c2832379292d8816b1d5cd485b48a52cd87",
+    "host_splits.csv": "379419cbe87a63d143cfbe97990d1d644c11d284e23227d128f09e311e399fd4",
+    "metrics.csv": "9fabbff17fe9a42559eda45acbe4542320269ff1f80b42235d2bdd805003fb37",
+    "model.json": "cea65ae8c119701e72c3ce3fbef0f94bc7aaa797e3c8122b31df37a411b7f06c",
+    "observed_pairs.csv": "4188ac3d640754ef6bce0b4751100c6c60fd64e4d975b21e959feb240cc3228a",
+    "predictions.csv": "c8ca25c9e344d73233bb11447f4a886e6c66f7f289e36f242533b731ea4b6a10",
+    "provenance.json": "4b534607eef2d60848c9ab3f75bda7d5b72658d9515da8fdb84d2eed6cc4456d"
+  },
+  "scope": "Uncalibrated scores for published source-coded MLC positivity. No productive-infection probability, mixture effect or clinical efficacy claim."
+}

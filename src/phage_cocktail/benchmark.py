@@ -49,12 +49,12 @@ def _require_disjoint_bacterial_strains(
         )
 
 
-def evaluate_pairwise_baselines(
+def pairwise_baseline_predictions(
     train: pd.DataFrame,
     test: pd.DataFrame,
     *,
     smoothing: float = 1.0,
-) -> pd.DataFrame:
+) -> dict[str, np.ndarray]:
     """Evaluate host-agnostic baselines on unseen bacterial strains.
 
     Phage identities may occur in both partitions. This evaluates generalization
@@ -74,7 +74,7 @@ def evaluate_pairwise_baselines(
         / (phage_stats["count"] + 2.0 * smoothing)
     ).to_dict()
 
-    predictions = {
+    return {
         "coin_flip_0.5": np.full(len(test), 0.5),
         "global_prevalence": np.full(len(test), global_rate),
         "phage_prevalence": np.asarray(
@@ -83,6 +83,12 @@ def evaluate_pairwise_baselines(
         ),
     }
 
+
+def evaluate_pairwise_baselines(
+    train: pd.DataFrame, test: pd.DataFrame, *, smoothing: float = 1.0,
+) -> pd.DataFrame:
+    """Evaluate the shared baseline predictions on the same observed rows."""
+    predictions = pairwise_baseline_predictions(train, test, smoothing=smoothing)
     rows = []
     for name, probability in predictions.items():
         rows.append({"baseline": name, **_metrics(test["infection"], probability)})

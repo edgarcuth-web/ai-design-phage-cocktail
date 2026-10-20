@@ -1,5 +1,9 @@
 # Step 2 benchmark
 
+Historical binary-matrix result. The later [MLC audit](host-baseline-results.md)
+found 41 source-coded zeros with missing primary readings. This table is retained
+for reproduction, and is not the current observed-label development cohort.
+
 This benchmark uses the pinned GenoPHI E. coli interaction matrix and a
 deterministic bacterial-strain split with seed 42. The dataset checksum and
 expected summary are verified against the registry before the benchmark runs.

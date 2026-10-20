@@ -1,0 +1,51 @@
+{
+  "study_id": "genophi-host-baseline:v1",
+  "subset_manifest": "data/registry/genophi_ecoli_subset.v1.json",
+  "primary_source_revision": "99656d8c020fcd1dbbc30a02ee10274a07655562",
+  "cohort_rule": "Keep registered subset pairs only when the published MLC is observed; require exact binary agreement with MLC > 0. Never turn missing MLC into a negative.",
+  "alias_rule": "Uppercase and remove hyphens; require a unique match in every source. Preserve an explicit alias table.",
+  "grouping": {
+    "core_distance_threshold": 0.0001,
+    "rule": "Connected components of pairs with core distance strictly below the threshold or identical canonical assembled sequence content; no group crosses partitions.",
+    "assembly_digest": "SHA-256 of sorted per-contig SHA-256 digests; each contig is uppercase and canonicalized against its reverse complement. Headers and contig order are ignored. Different fragmentation is not equated."
+  },
+  "split": {
+    "fractions": [0.7, 0.15, 0.15],
+    "seed": 42,
+    "order": "FNV-1a of seed:lexicographically-smallest-host-in-group; largest-remainder allocation by group count",
+    "scope": "Development evaluation on unseen host groups with known phage identities; no independent release holdout is claimed."
+  },
+  "features": {
+    "defense_counts": "All named subtype count columns from the pinned published DefenseFinder table; complete finite non-negative counts required.",
+    "categorical": ["O-type", "H-type", "LPS_type", "ABC_serotype"],
+    "missing_category": "__NOT_REPORTED__",
+    "forbidden": ["n_infections", "Mouse_killed_10", "bacteria", "Gembase", "UMAP"]
+  },
+  "preprocessing": {
+    "fit_scope": "Unique training hosts only",
+    "counts": "Training-only standardization; constant columns use scale 1",
+    "categorical": "Training-only one-hot vocabulary; missing is explicit; unseen categories have no active training-category indicator"
+  },
+  "estimator": {
+    "kind": "One L2 logistic regression per known phage",
+    "C": 0.1,
+    "solver": "lbfgs",
+    "max_iter": 2000,
+    "class_weight": null,
+    "single_class_fallback": "Beta(1,1)-smoothed training prevalence",
+    "selection": "Fixed before fitting; no hyperparameter search or evaluation-driven feature changes"
+  },
+  "comparators": ["coin_flip_0.5", "global_prevalence", "phage_prevalence_beta_1_1"],
+  "evaluation": {
+    "partitions": ["validation", "test"],
+    "metrics": ["auroc", "average_precision", "brier", "log_loss"],
+    "primary": "Pooled test average-precision difference: host-aware minus phage prevalence",
+    "bootstrap_unit": "Held-out host group, paired across models; known phage panel fixed",
+    "bootstrap_resamples": 2000,
+    "bootstrap_seed": 20261019,
+    "confidence_level": 0.95,
+    "improvement_rule": "Lower bound of the paired percentile interval must exceed zero",
+    "single_class_resample": "Omit and report the count; do not substitute a zero score"
+  },
+  "output_semantics": "Uncalibrated scores for published source-coded MLC positivity. No productive-infection probability, mixture effect or clinical efficacy claim."
+}

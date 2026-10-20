@@ -33,9 +33,12 @@ then documenting the rationale and uncertainty.
 
 ## Missingness and negatives
 
-An explicit source label of `0` is an observed negative label according to the
-source's coding. An absent bacterium-phage row is **unknown/unobserved**, not a
-negative. Loaders and evaluation code must not impute absent rows as zero.
+An explicit primary MLC reading of `0` is an observed source negative. An absent
+or missing primary reading is **unknown/unobserved**, not a negative. A binary CSV
+entry alone does not prove a primary reading existed: the row-level audit found
+41 source zeros corresponding to missing MLC. New training uses the study's
+curated observed rows; the historical registry preserves the original bytes.
+See [the audit and results](host-baseline-results.md).
 
 Pairwise metrics are computed only on explicitly observed test rows. Whole-cohort
 cocktail coverage requires a complete observed test matrix for every selected
@@ -44,7 +47,7 @@ instead of shrinking the denominator silently.
 
 ## Evaluation split
 
-The default split is 70%/15%/15% by bacterial strain, deterministically assigned
+The historical split is 70%/15%/15% by bacterial strain, deterministically assigned
 with seed 42. A strain belongs to exactly one of train, validation, or test.
 Benchmark functions independently reject train/test strain overlap.
 
@@ -56,12 +59,17 @@ unseen-phage protocol where scientifically appropriate.
 
 ## Reproducibility
 
+The host-feature study instead assigns whole genomic host groups, defined by
+published core distances and canonical assembly content. Its protocol and exact
+split IDs are frozen under `data/studies/`; group fractions need not equal host
+fractions. All baselines are recomputed on those same observed evaluation rows.
+
 Before training or evaluation:
 
 1. resolve the dataset manifest;
 2. verify the raw-file SHA-256;
 3. validate the canonical schema and duplicate-pair constraints;
 4. verify expected summary statistics;
-5. create the deterministic strain split;
+5. reconcile primary label missingness and freeze deterministic host-group splits;
 6. record dataset ID/version, manifest, split seed, code revision, model artifact,
    and evaluation metrics together.

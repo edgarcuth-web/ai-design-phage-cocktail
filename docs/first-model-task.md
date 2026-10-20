@@ -1,9 +1,10 @@
 # First model task: phage–host source-interaction prediction
 
-Status: task and exchange implemented; no trained host-aware model or calibrated
-inference is delivered by this change. Project name: **Phage–Host Interaction
-Predictor**. The existing Python package name remains `phage_cocktail` so current
-scripts keep working. Repository renaming is independent of this task.
+Status: task, exchange and a fixed host-feature development model are implemented.
+The first study did not meet the criterion for improving over phage prevalence;
+see [its audit and results](host-baseline-results.md). Calibrated inference has not
+been demonstrated. Project name: **Phage–Host Interaction Predictor**. The existing
+Python package name remains `phage_cocktail` so current scripts keep working.
 
 ## Task and evidence
 
@@ -16,7 +17,7 @@ effects, cocktail efficacy, or the properties of a hypothetical engineered phage
 | --- | --- |
 | Inputs | Exact HostState and PhageProfile snapshots; supplied scientific FeatureArtifacts; optional, explicitly exported FASTA resources with byte and normalized-sequence hashes |
 | Endpoint | `genophi-ecoli-subset:source-interaction:v1`, source column `interaction` |
-| Labels | Explicit observed 1/0 rows; canonical `infection` is only a column rename; absent rows remain unknown |
+| Labels | Source-coded 1/0; `infection` is only a rename. The later primary-source audit excludes 41 zeros with missing MLC; absent/missing observations remain unknown |
 | Assay context | Explicitly unknown for the current subset; caller-declared context must include evidence |
 | Output | A source-endpoint score, or `not_estimated` with a reason; a probability additionally requires a verified endpoint, calibration artifact and uncertainty |
 | Generalization | Unseen bacterial strain IDs with phages that may be known in training; not unseen phages, species, laboratories or conditions |
@@ -39,14 +40,15 @@ model card and abstain on unsupported phages.
 
 | Evidence | What it establishes | Remaining gap |
 | --- | --- | --- |
-| [Pinned GenoPHI matrix](https://github.com/Noonanav/GenoPHI/blob/f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f/data/interaction_matrices/ecoli_interaction_matrix_subset.csv) and local registry | Exact downloadable bytes and expected 177 × 94 = 16,638 binary observations | Not a row-by-row audit of the original assay |
+| [Pinned GenoPHI matrix](https://github.com/Noonanav/GenoPHI/blob/f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f/data/interaction_matrices/ecoli_interaction_matrix_subset.csv) and local registry | Exact downloadable bytes and expected 177 × 94 = 16,638 binary entries | Entries alone do not establish primary observation status |
 | [Pinned upstream README](https://github.com/Noonanav/GenoPHI/blob/f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f/README.md) | Calls this an E. coli subset for testing; describes binary phenotype input | Does not specify this subset's assay threshold or recoding rule |
 | [Noonan et al., 2026](https://doi.org/10.1038/s41564-026-02482-5), model-development datasets | Identifies the same subset dimensions and cites its source | Its separate new-phage validation assay cannot establish the old subset's label mapping |
-| [Gaborieau et al., 2024](https://doi.org/10.1038/s41564-024-01832-5) | Original study identified for follow-up | Original phenotype categories, subset selection and binary recoding must still be reconciled against the pinned CSV |
+| [Gaborieau et al., 2024](https://doi.org/10.1038/s41564-024-01832-5) and its pinned source matrix | All 16,597 known readings match MLC > 0; 41 unknowns were source-coded zero | Raw-image/replicate aggregation and row-specific assay contexts were not revalidated |
 
-Keep `operational_definition_status` and `model_target_mapping_status` unverified.
-The upstream software's MIT statement does not independently resolve dataset
-reuse terms. No new assay meaning or license clearance is asserted here.
+The original registry/endpoint remains frozen and unverified; the new versioned
+study explicitly records the primary-source reconciliation and exclusions.
+Mechanistic target mapping remains unverified. The upstream software's MIT
+statement does not independently resolve dataset reuse terms.
 
 To close the label review, retain the source table/protocol reference, original
 values, exact binary transformation, ambiguous/missing exclusions, subset ID
@@ -65,14 +67,14 @@ Software acceptance is executable now:
 3. Scores cannot silently become calibrated probabilities or legacy mechanistic
    predictions. No inference produces an explicit `not_estimated` result.
 
-Scientific acceptance for a **future host-aware model** is separate:
+Scientific acceptance for a **host-aware model** is separate:
 
 1. Verify the registered data checksum, source endpoint and host/phage ID mapping.
    Freeze dataset, representation, preprocessing, code, weights and split IDs.
-2. Reproduce the current 70/15/15 strain split (seed 42) as a development benchmark.
+2. Preserve the historical strain-ID benchmark for reproduction. New training
+   uses observed-label curation and genomic host groups (70/15/15 groups, seed 42).
    Fit preprocessing on training data; fit thresholds/calibration on validation
-   only. Identical genomes/duplicate isolates must be grouped before a stronger
-   generalization claim; a strain-ID split alone does not prove genomic separation.
+   only. A strain-ID split alone does not prove genomic separation.
 3. Report AUROC, average precision, Brier and log loss against all three baselines
    on the same observed rows, with counts and missingness. The primary gain is
    average precision over per-phage prevalence, with paired host-group bootstrap

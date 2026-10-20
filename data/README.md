@@ -33,24 +33,26 @@ The project loader normalizes it to:
     bacterium,phage,infection
 
 This is a column-name normalization, not a claim that the source label directly
-measures adsorption, productive infection, or resistance emergence. The exact
-source assay definition and mapping to those mechanistic targets remain
-unverified and must be reviewed before the label is used for those tasks.
+measures adsorption, productive infection, or resistance emergence. The
+[later MLC audit](../docs/host-baseline-results.md) establishes exact binary
+agreement on known primary readings and identifies 41 source zeros with missing
+MLC. Mapping the target to mechanistic outcomes remains unverified.
 
 Expected statistics for this pinned file:
 
-- 16,638 observed interactions
+- 16,638 source-coded rows
 - 177 bacterial strains
 - 94 phages
 - 3,813 source-positive labels
 - 12,825 source-negative labels
 - 22.9% positive rate
-- 100% of the 177 x 94 strain-phage matrix observed
+- 100% of the 177 x 94 strain-phage matrix syntactically populated
 - no duplicate strain-phage pairs
 
 **Missing-pair rule:** a pair absent from a dataset is unknown/unobserved, not
-negative. Do not fill missing pairs with zero. The source subset happens to be a
-complete matrix; future datasets may not be.
+negative. Do not fill missing pairs with zero. The source CSV is syntactically
+complete, but 41 primary readings are missing. The new study admits 16,597
+observed rows with 12,784 explicit negatives.
 
 License status has not yet been independently verified. Do not redistribute the
 downloaded data until the upstream data terms have been checked.
