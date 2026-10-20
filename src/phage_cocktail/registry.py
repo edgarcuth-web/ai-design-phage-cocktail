@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import hashlib
 import json
 from pathlib import Path
 import re
@@ -11,6 +10,7 @@ from typing import Any
 
 from .analysis import summarize_interactions
 from .data import load_interactions
+from .artifacts import sha256_file
 
 MANIFEST_SCHEMA_VERSION = 1
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
@@ -60,19 +60,32 @@ class DatasetVerification:
     summary: dict[str, Any]
 
 
-def sha256_file(path: str | Path) -> str:
-    """Compute a file's SHA-256 without loading the whole file into memory."""
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def _require_exact_fields(value: Any, fields: set[str], name: str) -> dict[str, Any]:
     if not isinstance(value, dict) or set(value) != fields:
         raise ValueError(f"{name} must contain exactly: {', '.join(sorted(fields))}.")
     return value
+
+
+def source_endpoint_from_manifest(path: str | Path) -> dict:
+    """Describe the source label without asserting an unreviewed assay mapping."""
+    manifest = load_dataset_manifest(path)
+    labels = manifest["label_semantics"]
+    if (labels["positive_value"], labels["negative_value"]) != (1, 0):
+        raise ValueError("source endpoint v1 requires explicit binary 1/0 coding")
+    return {
+        "endpoint_id": f"{manifest['dataset_id']}:source-interaction:v1",
+        "kind": "source_defined_binary",
+        "definition": labels["operational_definition"],
+        "positive_value": 1, "negative_value": 0,
+        "assay_definition_status": (
+            "verified" if labels["operational_definition_status"] == "verified" else "unverified"
+        ),
+        "source": {"dataset_id": manifest["dataset_id"], "version": manifest["version"],
+                   "sha256": manifest["sha256"], "label_column": labels["source_column"]},
+        "evidence": [manifest["source"]["download_url"]],
+        "limitations": [labels["model_target_mapping_note"],
+                        "Missing pairs are unknown, not negative; mixture outcomes are outside this endpoint."],
+    }
 
 
 def _require_text(value: Any, name: str) -> str:

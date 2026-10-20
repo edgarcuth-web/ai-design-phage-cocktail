@@ -1,0 +1,21 @@
+{
+  "endpoint_id": "genophi-ecoli-subset:source-interaction:v1",
+  "kind": "source_defined_binary",
+  "definition": "The exact assay protocol and decision rule for this subset have not yet been independently verified in this repository. Preserve source labels without reinterpreting them.",
+  "positive_value": 1,
+  "negative_value": 0,
+  "assay_definition_status": "unverified",
+  "source": {
+    "dataset_id": "genophi-ecoli-subset",
+    "version": "upstream-commit:f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f",
+    "sha256": "9a7caa8c48d475a2d0fa153ae61dab3b3484be8c266b0ef965f171218606a6e6",
+    "label_column": "interaction"
+  },
+  "evidence": [
+    "https://raw.githubusercontent.com/Noonanav/GenoPHI/f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f/data/interaction_matrices/ecoli_interaction_matrix_subset.csv"
+  ],
+  "limitations": [
+    "Do not use this label as a direct target for adsorption, productive infection, or resistance emergence until the source phenotype definition and assay mapping are verified.",
+    "Missing pairs are unknown, not negative; mixture outcomes are outside this endpoint."
+  ]
+}

@@ -1,26 +1,20 @@
-# Phage Cocktail Predictor
+# Phage–Host Interaction Predictor
 
 Research infrastructure for phage-host interaction prediction and phage-cocktail
 baselines. Dataset provenance, label semantics and evaluation boundaries are
 explicit; this repository does not establish clinical efficacy.
 
-## MVP question
+## First task
 
-Given a bacterial strain and a set of candidate phages:
+Predict a named source-defined binary outcome for one bacterial strain and one
+existing phage, then evaluate on unseen strains with possibly known phages.
+The task, label evidence, generalization limits and acceptance criteria are in
+[`docs/first-model-task.md`](docs/first-model-task.md).
 
-1. estimate pairwise interaction probabilities for explicitly defined targets;
-2. combine those probabilities into a simple cocktail baseline;
-3. evaluate on bacterial strains not seen during training;
-4. report calibrated uncertainty only when supported by validation.
-
-The first cocktail baseline assumes independent phage action:
-
-```text
-P(at least one phage infects) = 1 - product(1 - p_i)
-```
-
-This is deliberately simple. Real phages can share receptors, encounter the same
-bacterial defence systems, or otherwise have dependent outcomes.
+Current delivery: dataset/baseline infrastructure and a working file-based input
+and result boundary. No trained host-aware model or calibrated inference is
+included. Pairwise matrices and offline union-coverage baselines do not establish
+cocktail efficacy.
 
 ## Repository layout
 
@@ -29,17 +23,19 @@ data/
   raw/              # downloaded source data; not committed
   processed/        # cleaned/model-ready data; not committed
   registry/         # versioned dataset manifests and label semantics
+  endpoints/        # explicit source-label endpoint descriptors
 notebooks/          # exploration and experiments
 src/phage_cocktail/
   artifacts.py      # canonical JSON hashes and raw-file digests
-  model_interface.py # ModelRequest/ModelResult validation and CLI
+  model_interface.py # exchange validation and CLI
+  input_bundle.py   # frozen input/resource consumer and PairPrediction
   baseline.py       # simple cocktail probability baseline
   data.py           # observed interaction-table loading/validation
   registry.py       # dataset checksum and summary verification
   split.py          # deterministic strain-level splits
   benchmark.py      # leakage-guarded pairwise/cocktail baselines
 tests/              # automated tests
-schemas/            # ModelRequest/ModelResult wire schemas
+schemas/            # bundle/pair-result and legacy request/result wire schemas
 ```
 
 ## Dataset and labels
@@ -55,13 +51,22 @@ An absent pair is unknown/unobserved, not a negative label. See
 [`docs/dataset_contract.md`](docs/dataset_contract.md) and
 [`data/README.md`](data/README.md).
 
-## External model exchange contract
+## Model exchange
 
-The file-based boundary to the self-driving lab is currently defined by the transitional ModelRequest v1 / ModelResult v1 schemas in [`schemas/`](schemas/) and documented in [`docs/model-interface.md`](docs/model-interface.md). Shared fixtures are validated in CI. The intended next boundary is an SDL-produced, immutable ModelInputBundle; this repository should consume the bundle rather than resolve lab records or raw FASTA paths.
+SDL exports **ModelInputBundle v1** with complete pair snapshots, an explicit
+source endpoint/context, scientific FeatureArtifact provenance and optional local
+FASTA payloads. The consumer verifies all supplied bytes and rejects missing
+model-required sequences. **PairPrediction v1** binds the exact bundle and
+separates unresolved, uncalibrated-score and probability outputs.
 
-## File-based model interface
+```bash
+phage-model-interface validate-bundle tests/fixtures/input_bundle/bundle.json --require-sequence host
+```
 
-The model exchange CLI validates the shared `ModelRequest v1` and `ModelResult v1` contracts. It does not run inference. After installing the project, run `phage-model-interface --help` for commands, or see [`docs/model-interface.md`](docs/model-interface.md) for a request/result round trip and explicit unresolved response behavior.
+The fixture is synthetic and tests software only. The legacy ModelRequest /
+ModelResult v1 commands remain for existing consumers; their three mechanistic
+targets are not aliases for source labels. See
+[`docs/model-interface.md`](docs/model-interface.md) for the complete round trip.
 
 ## Setup
 
@@ -132,6 +137,8 @@ GenoPHI is pinned to version 1.0.3 and its demo data to commit
 - [x] Define deterministic held-out-strain splitting and basic baselines
 - [x] Guard against train/test strain overlap and missing-pair coverage bias
 - [x] Wire in the official GenoPHI genome-aware reference workflow
+- [x] Define the first pairwise task and preserve unverified assay semantics
+- [x] Consume frozen input bundles and return exact source-endpoint results
 - [ ] Verify the source assay definition and license terms
 - [ ] Reproduce GenoPHI demo metrics locally
 - [ ] Define target-specific label mapping before training mechanistic targets

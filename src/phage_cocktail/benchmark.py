@@ -137,9 +137,10 @@ def evaluate_broadest_cocktails(
     test: pd.DataFrame,
     cocktail_sizes: Iterable[int] = range(1, 6),
 ) -> pd.DataFrame:
-    """Evaluate cocktails selected by training-set phage prevalence.
+    """Evaluate offline union coverage selected by training-set phage prevalence.
 
-    Actual held-out coverage is only reported when every selected phage has an
+    This is a union of single-phage labels, not a measured mixture outcome.
+    Held-out coverage is only reported when every selected phage has an
     observed outcome for every test strain. Missing pairs are unknown, not
     negative, and cannot be silently omitted from the coverage denominator.
     The independence estimate is deliberately naive and exposes overlap or

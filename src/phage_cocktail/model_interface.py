@@ -11,14 +11,13 @@ from collections.abc import Mapping
 from datetime import datetime, timezone
 from functools import lru_cache
 import json
-import os
 from pathlib import Path
 import sys
-import tempfile
 
 from jsonschema import Draft202012Validator, FormatChecker
 
 from .artifacts import (
+    atomic_write_json as _atomic_write_json,
     canonical_content_sha256 as _content_hash,
     read_json_object as _read_json,
 )
@@ -51,11 +50,13 @@ def _parse_timestamp(value: str, field_name: str) -> datetime:
     return parsed
 
 
-@lru_cache(maxsize=2)
+@lru_cache(maxsize=4)
 def _validator(schema_name: str) -> Draft202012Validator:
     if schema_name not in {
         "model-request-v1.schema.json",
         "model-result-v1.schema.json",
+        "model-input-bundle-v1.schema.json",
+        "pair-prediction-v1.schema.json",
     }:
         raise ValueError(f"unsupported schema name: {schema_name}")
     schema = _read_json(SCHEMA_DIR / schema_name)
@@ -250,33 +251,6 @@ def create_unresolved_result(
     )
 
 
-def _atomic_write_json(document: dict, path: str | Path) -> None:
-    destination = Path(path)
-    temporary_name = None
-    try:
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            dir=destination.parent,
-            prefix=f".{destination.name}.",
-            suffix=".tmp",
-            delete=False,
-        ) as stream:
-            temporary_name = stream.name
-            json.dump(document, stream, ensure_ascii=False, indent=2, allow_nan=False)
-            stream.write("\n")
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.replace(temporary_name, destination)
-    except (OSError, TypeError, ValueError) as exc:
-        if temporary_name is not None:
-            try:
-                os.unlink(temporary_name)
-            except OSError:
-                pass
-        raise ValueError(f"cannot write JSON artifact to {destination}: {exc}") from exc
-
 
 def write_model_result(
     result: dict,
@@ -294,6 +268,19 @@ def _parser() -> argparse.ArgumentParser:
         description="Validate the versioned model exchange and emit explicit unresolved results; no biological annotation is run here.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
+
+    bundle = commands.add_parser("validate-bundle", help="verify frozen snapshots and every local payload")
+    bundle.add_argument("bundle", type=Path)
+    bundle.add_argument("--require-sequence", choices=("host", "phage"), action="append", default=[])
+
+    pair = commands.add_parser("validate-pair-prediction", help="check an exact source-endpoint result")
+    pair.add_argument("result", type=Path)
+    pair.add_argument("--bundle", type=Path, required=True)
+
+    abstain = commands.add_parser("create-unresolved-pair-prediction", help="record no inference against a frozen bundle")
+    abstain.add_argument("bundle", type=Path)
+    abstain.add_argument("output", type=Path)
+    abstain.add_argument("--prediction-id", required=True)
 
     validate_request = commands.add_parser(
         "validate-request", help="validate a ModelRequest JSON file"
@@ -324,6 +311,25 @@ def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
     try:
+        if args.command in {"validate-bundle", "validate-pair-prediction", "create-unresolved-pair-prediction"}:
+            from .input_bundle import load_input_bundle, validate_pair_prediction, build_pair_prediction
+
+            bundle = load_input_bundle(args.bundle, required_sequences=getattr(args, "require_sequence", ()))
+            if args.command == "validate-bundle":
+                print(f"valid ModelInputBundle: {bundle['bundle_id']} sha256={bundle['content_sha256']}")
+            elif args.command == "validate-pair-prediction":
+                result = validate_pair_prediction(_read_json(args.result), bundle)
+                print(f"valid PairPrediction: {result['prediction_id']}; {result['estimate']['status']}")
+            else:
+                if args.output.exists() or args.output.is_symlink():
+                    raise ValueError("output already exists; refusing to overwrite")
+                if args.output.resolve().is_relative_to(args.bundle.resolve().parent):
+                    raise ValueError("write prediction outside the frozen bundle directory")
+                result = build_pair_prediction(bundle, prediction_id=args.prediction_id)
+                _atomic_write_json(result, args.output)
+                print(f"wrote unresolved PairPrediction: {args.output}; no inference was run")
+            return 0
+
         if args.command == "validate-request":
             request = load_model_request(args.request)
             print(
