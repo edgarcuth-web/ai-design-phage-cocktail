@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "phage-cocktail-predictor"
 version = "0.1.0"
-description = "Research prototype for phage-host and phage-cocktail infection prediction."
+description = "Research infrastructure for source-defined pairwise phage-host prediction."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

@@ -1,0 +1,648 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "bundle_id",
+    "created_at",
+    "endpoint",
+    "assay_context",
+    "host_state",
+    "phage_profile",
+    "phage_profile_sha256",
+    "sequence_status",
+    "resources",
+    "feature_artifacts",
+    "content_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "kind": {
+      "const": "model_input_bundle"
+    },
+    "bundle_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoint_id",
+        "kind",
+        "definition",
+        "positive_value",
+        "negative_value",
+        "assay_definition_status",
+        "source",
+        "evidence",
+        "limitations"
+      ],
+      "properties": {
+        "endpoint_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "const": "source_defined_binary"
+        },
+        "definition": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "positive_value": {
+          "const": 1
+        },
+        "negative_value": {
+          "const": 0
+        },
+        "assay_definition_status": {
+          "enum": [
+            "unverified",
+            "verified"
+          ]
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "dataset_id",
+            "version",
+            "sha256",
+            "label_column"
+          ],
+          "properties": {
+            "dataset_id": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "label_column": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        }
+      }
+    },
+    "assay_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "conditions",
+        "evidence"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "unknown",
+            "declared"
+          ]
+        },
+        "conditions": {
+          "type": "object"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        }
+      }
+    },
+    "host_state": {
+      "type": "object",
+      "required": [
+        "record_id",
+        "content_sha256",
+        "host_profile_id",
+        "host_genome_sha256",
+        "as_of",
+        "created_at",
+        "components",
+        "evidence"
+      ],
+      "properties": {
+        "record_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "host_profile_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "host_genome_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "components": {
+          "type": "array"
+        },
+        "evidence": {
+          "type": "array"
+        }
+      }
+    },
+    "phage_profile": {
+      "type": "object",
+      "required": [
+        "profile_id",
+        "sequence",
+        "provenance",
+        "created_at"
+      ],
+      "properties": {
+        "profile_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "sequence": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "provenance": {
+          "type": "object"
+        }
+      }
+    },
+    "phage_profile_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sequence_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "phage"
+      ],
+      "properties": {
+        "host": {
+          "enum": [
+            "available",
+            "not_provided"
+          ]
+        },
+        "phage": {
+          "enum": [
+            "available",
+            "not_provided"
+          ]
+        }
+      }
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "subject",
+          "path",
+          "sha256",
+          "size_bytes",
+          "sequence_sha256",
+          "registry",
+          "accession",
+          "source_snapshot_sha256"
+        ],
+        "properties": {
+          "subject": {
+            "enum": [
+              "host",
+              "phage"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sequence_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "registry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "registry_id",
+              "file_sha256"
+            ],
+            "properties": {
+              "registry_id": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "file_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          },
+          "accession": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_snapshot_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "feature_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "directory",
+          "manifest"
+        ],
+        "properties": {
+          "directory": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "manifest": {
+            "$ref": "#/$defs/featureArtifact"
+          }
+        }
+      }
+    },
+    "content_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ModelInputBundle v1",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id",
+        "sequence_sha256",
+        "input_file_sha256",
+        "length_bases",
+        "contigs"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "host_genome",
+            "phage_sequence"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sequence_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "input_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "length_bases": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "contigs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "accession": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_snapshot_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "sequence_registry_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sequence_registry_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_record_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_record_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool",
+        "started_at",
+        "finished_at",
+        "parameters",
+        "parameters_sha256",
+        "reference_data"
+      ],
+      "properties": {
+        "tool": {
+          "$ref": "#/$defs/tool"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "finished_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "parameters": {
+          "type": "object"
+        },
+        "parameters_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "reference_data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/referenceSnapshot"
+          }
+        },
+        "environment": {
+          "type": "object"
+        }
+      }
+    },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "executable_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "analysis_script_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "container_image_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "referenceSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "sha256"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_uri": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "path",
+        "format",
+        "media_type",
+        "sha256",
+        "size_bytes"
+      ],
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "primary",
+            "raw",
+            "log",
+            "auxiliary"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "media_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "schema_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "featureArtifact": {
+      "description": "Provenance manifest for outputs of a versioned computational feature analysis. It does not establish biological validity.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "artifact_id",
+        "created_at",
+        "feature_set",
+        "subject",
+        "analysis",
+        "outputs",
+        "status",
+        "limitations",
+        "content_sha256"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "artifact_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "feature_set": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subject": {
+          "$ref": "#/$defs/subject"
+        },
+        "analysis": {
+          "$ref": "#/$defs/analysis"
+        },
+        "outputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/output"
+          },
+          "allOf": [
+            {
+              "contains": {
+                "properties": {
+                  "role": {
+                    "const": "primary"
+                  }
+                },
+                "required": [
+                  "role"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial"
+          ]
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}

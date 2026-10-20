@@ -1,82 +1,113 @@
 # Model exchange boundary
 
-This repository owns model-ready datasets, model-specific preprocessing and
-representations, training, evaluation, calibration, model artifacts and inference.
-It does not own biological characterization, source-record resolution, raw FASTA
-ingestion, PADLOC or other scientific annotation tools. Those responsibilities
-belong to `self-driving-lab-for-phage-therapy`.
+This repository owns model-specific preprocessing, datasets, training, evaluation,
+calibration, model artifacts and inference. SDL owns scientific characterization,
+source resolution, experimental state and decisions.
 
-The current ModelRequest v1 / ModelResult v1 interface is transitional. The target
-boundary is an immutable, content-addressed `ModelInputBundle v1` produced by SDL.
-That bundle should carry admitted scientific annotations, explicit screening and
-missingness states, field-level provenance, and exact source fingerprints. This
-repository will then perform only model-specific transformation and inference
-against that frozen input.
+Neither side imports the other's private implementation. The exchange is
+versioned files with mirrored JSON Schemas and shared software fixtures.
 
-## Wire schemas
+## Current first-task interface
 
-- [ModelRequest v1 JSON Schema](../schemas/model-request-v1.schema.json)
-- [ModelResult v1 JSON Schema](../schemas/model-result-v1.schema.json)
-- [ModelRequest fixture](../tests/fixtures/model_request_v1.json)
-- [ModelResult fixture](../tests/fixtures/model_result_v1.json)
+**ModelInputBundle v1 → PairPrediction v1** supports one existing host–phage pair
+and one explicitly source-defined binary endpoint. This is a research interface;
+it does not implement inference, inverse design or cocktail-effect prediction.
 
-The schemas are mirrored in the SDL repository so both sides can validate the
-same wire format. Changes must be coordinated. Schema validation checks the wire
-shape; the Python interface additionally checks content hashes, record-ID
-equality, exact request/result lineage, timestamp ordering and requested-target
-admission.
+| Bundle field | Meaning |
+| --- | --- |
+| `host_state` | Full frozen HostState, components, evidence and missingness, with its own hash |
+| `phage_profile` / `phage_profile_sha256` | Full profile, sequence reference, annotations and natural/retrieved/engineered provenance |
+| `endpoint` | Named binary source label, dataset version/digest, original label column, assay-definition review status and evidence |
+| `assay_context` | `unknown` with empty conditions/evidence, or declared conditions with evidence; never invented defaults |
+| `sequence_status` | Explicit `available` or `not_provided` for host and phage |
+| `resources` | Explicitly exported local DNA FASTA files, bundle-relative path, byte SHA-256/size, normalized sequence identity and registry provenance |
+| `feature_artifacts` | Unchanged scientific manifests plus copied outputs under a bundle-relative directory; partial status, limitations, analyzer/reference versions and output hashes are retained |
 
-## Current v1 semantics
+All resources live below the export directory. Paths cannot escape through `..`,
+absolute paths or symlinks. The consumer verifies every supplied resource and
+fails when a model-required sequence is missing. This revision has no network
+fetcher or automatic external-service upload. The user must explicitly select
+sequences to export; a profile hash alone never implies sequence availability.
 
-A ModelRequest binds one exact HostState content hash, one exact PhageProfile
-content fingerprint and the prediction targets being requested. A ModelResult
-echoes the exact request ID and SHA-256, the same host/phage fingerprints, all
-three target slots, producer identity, immutable model artifact SHA-256,
-limitations, explanation and prediction time. Targets that were not requested
-must remain `not_estimated`.
+`feature_artifacts=[]` means no supplied annotation artifact, not a negative
+result. Likewise an absent HostState component remains unknown. Feature
+provenance is carried by its unchanged manifest and output location; no feature
+values or evidence are synthesized. A genome-derived annotation may have been
+computed after HostState `as_of`, but must exist before bundle creation. It does
+not mutate H(t) or establish a contemporaneous dynamic state.
 
-This version does not carry the complete scientific characterization bundle yet.
-Do not infer that a missing annotation is biologically negative. In particular,
-PADLOC `no_hits_detected` means no calls were detected by that pinned analysis
-run; it is not evidence that the host lacks anti-phage defense systems. Until
-ModelInputBundle v1 is implemented, the model must not attempt to resolve local
-HostState, PhageProfile or sequence-registry paths.
+`content_sha256` hashes canonical JSON (UTF-8, sorted keys, compact separators),
+excluding only the outer hash field. Embedded snapshots and resource byte hashes
+are covered. PhageProfile is hashed in full. Sequence normalized hashes use SDL's
+uppercase DNA contigs, ignoring headers/whitespace, with a NUL before each contig;
+raw file hashes cover exact bytes including headers. These are different digests.
+Existing export directories cannot be overwritten. New inputs require a new
+bundle identity/export. Relocating the whole directory preserves validity.
 
-## CLI
+## Results
 
-Validate a request:
+PairPrediction echoes exact `bundle_id` and `bundle_sha256`. The endpoint, pair,
+context and all inputs are thereby bound together. Results cannot predate the
+bundle. Model output is one of:
+
+- `not_estimated`: null value and uncertainty, with an explicit reason.
+- `uncalibrated_score`: a bounded score; model and preprocessing artifact digests
+  are mandatory. It is not a calibrated infection probability.
+- `probability`: additionally requires a verified source assay definition,
+  calibration artifact digest, containing uncertainty interval and named method.
+
+These checks establish consistency, not scientific verification of a calibration
+claim. Model promotion requires the separate evidence and evaluation review.
+Unresolved outputs never become training negatives.
+
+## Runnable round trip
+
+With SDL and model checkouts installed in the same Python environment, start in
+SDL. The checked-in bundle is a tiny software-only fixture, not experimental data:
 
 ```bash
-phage-model-interface validate-request tests/fixtures/model_request_v1.json
+python -m phage_lab validate-model-bundle tests/fixtures/input_bundle/bundle.json --require-sequence host
+phage-model-interface validate-bundle tests/fixtures/input_bundle/bundle.json --require-sequence host
+phage-model-interface create-unresolved-pair-prediction tests/fixtures/input_bundle/bundle.json /tmp/pair-unresolved.json --prediction-id interface-check
+python -m phage_lab validate-pair-prediction /tmp/pair-unresolved.json --bundle tests/fixtures/input_bundle/bundle.json
 ```
 
-Validate a result against its exact request:
+The output path must be new and outside the frozen bundle directory. This round
+trip runs no inference. A model implementation uses `load_input_bundle`, performs
+its own preprocessing/inference, and calls `build_pair_prediction` with explicit
+outputs and version digests. `read_sequence_bytes` returns verified FASTA bytes.
+
+For real inputs SDL's `export-model-bundle` takes `--host-state`, `--phage-profile`,
+`--endpoint`, `--assay-context`, `--bundle-id` and `--outdir`. Optional
+`--sequence-registry` plus repeated `--include-sequence host|phage` explicitly
+copies sequences. Repeated `--feature-artifact` includes validated annotation
+outputs. See SDL `docs/usage.md` for an export example.
+
+Cross-check both repositories from SDL:
 
 ```bash
-phage-model-interface validate-result tests/fixtures/model_result_v1.json \
-  --request tests/fixtures/model_request_v1.json
+python tests/integration/check_model_bundle.py --model-repo ../model
 ```
 
-Create an explicit unresolved result without running inference:
+## Legacy mechanistic interface
 
-```bash
-phage-model-interface create-unresolved-result \
-  tests/fixtures/model_request_v1.json /tmp/model-result-unresolved.json
-```
+ModelRequest v1 / ModelResult v1 and their existing fixtures remain supported.
+They request adsorption, productive infection and resistance emergence and bind
+identities, rather than carrying usable input data. Existing admission into
+InteractionPrediction and CandidateSet is unchanged.
 
-The unresolved command never fabricates probabilities. All three targets remain
-`not_estimated` unless an actual model implementation is integrated and its
-outputs pass the same validation contract.
+**A source-interaction PairPrediction is not automatically converted to a legacy
+mechanistic target or admitted to the productive-infection CandidateSet policy.**
+That needs a reviewed endpoint mapping and an endpoint-specific policy. The first
+label remains unverified, so this revision deliberately provides no such mapping.
+Do not copy a source score into a mechanistic probability slot.
 
-## Model-specific artifacts
+## Training and feedback
 
-Embeddings, tokenizer output, graph representations, normalization parameters,
-training tensors, split assignments, model checkpoints, calibration artifacts and
-inference outputs belong here because their meaning depends on a specific model or
-training pipeline. They must be versioned and tied to the exact input bundle,
-preprocessing configuration and model artifact digest.
-
-Scientific annotations such as receptor/surface characterization, PADLOC defense
-calls, phage RBP annotations and experimentally observed phenotypes do not belong
-here. SDL stores those records with source provenance; this repository consumes a
-frozen export rather than reimplementing the biology.
+SDL owns QC-admitted physical results and explicit assessor labels. Curated
+training-data export is separate from inference-input export. Training pipelines
+must exclude target outcomes and future evidence from features, group duplicate
+isolates/genomes, and keep preprocessing/calibration off the held-out evaluation
+partition. A frozen input hash alone does not prove freedom from label leakage.
+Retraining and promotion are explicit model-side actions, never automatic
+consequences of a new laboratory result.

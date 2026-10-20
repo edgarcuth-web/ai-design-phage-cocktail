@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "kind": "model_input_bundle",
+  "bundle_id": "software-fixture-bundle",
+  "created_at": "2026-10-19T11:30:00Z",
+  "endpoint": {
+    "endpoint_id": "fixture-source-label:v1",
+    "kind": "source_defined_binary",
+    "definition": "Source label only; no assay mapping.",
+    "positive_value": 1,
+    "negative_value": 0,
+    "assay_definition_status": "unverified",
+    "source": {
+      "dataset_id": "fixture",
+      "version": "1",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "label_column": "interaction"
+    },
+    "evidence": [
+      "https://example.org/software-fixture"
+    ],
+    "limitations": [
+      "Software fixture only."
+    ]
+  },
+  "assay_context": {
+    "status": "unknown",
+    "conditions": {},
+    "evidence": []
+  },
+  "host_state": {
+    "content_sha256": "9a6ee01a5fa1a0300cb90ba1d944e2ca1b75bccc9047c6dba7076fbf720cc073",
+    "schema_version": 1,
+    "record_id": "fixture-state:v1",
+    "host_state_id": "fixture-state",
+    "revision": 1,
+    "host_profile_id": "fixture-host:v1",
+    "host_genome_sha256": "61f8158b1b1cfe9e97037cba003b2cd251793644f3c62dc5151a0f5a1e8654b9",
+    "as_of": "2026-01-02T00:00:00+00:00",
+    "components": [],
+    "evidence": [],
+    "limitations": [],
+    "previous_state": null,
+    "created_at": "2026-01-02T00:00:00+00:00"
+  },
+  "phage_profile": {
+    "schema_version": 1,
+    "profile_id": "bundle-fixture:v1",
+    "phage_id": "bundle-fixture",
+    "revision": 1,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "provenance": {
+      "kind": "natural",
+      "collection_id": "fixture-collection",
+      "isolate_id": "bundle-fixture",
+      "recorded_at": "2026-01-01T00:00:00+00:00",
+      "source_description": "Contract fixture only."
+    },
+    "sequence": null,
+    "source_annotations": {}
+  },
+  "phage_profile_sha256": "3a3cb09377734d1d7bc70167c8ec43d913f9ca99f2c02a4312dedae52d5756d1",
+  "sequence_status": {
+    "host": "available",
+    "phage": "not_provided"
+  },
+  "resources": [
+    {
+      "subject": "host",
+      "path": "sequences/host.fasta",
+      "sha256": "3f11b52c986a49d48f451b3229b9958b353d50ef94e37457517d48bf266e4d99",
+      "size_bytes": 32,
+      "sequence_sha256": "61f8158b1b1cfe9e97037cba003b2cd251793644f3c62dc5151a0f5a1e8654b9",
+      "registry": {
+        "registry_id": "software-fixture-registry",
+        "file_sha256": "a8fc4382267dd60d9d1016b6390fba201a42a923851eb83d243a9fb540368da1"
+      },
+      "accession": null,
+      "source_snapshot_sha256": null
+    }
+  ],
+  "feature_artifacts": [
+    {
+      "directory": "features/0",
+      "manifest": {
+        "schema_version": 1,
+        "artifact_id": "feature-artifact-test-001",
+        "created_at": "2026-10-18T10:03:00+00:00",
+        "feature_set": "host_defense_systems",
+        "subject": {
+          "kind": "host_genome",
+          "id": "fixture-state:v1",
+          "sequence_sha256": "61f8158b1b1cfe9e97037cba003b2cd251793644f3c62dc5151a0f5a1e8654b9",
+          "input_file_sha256": "3f11b52c986a49d48f451b3229b9958b353d50ef94e37457517d48bf266e4d99",
+          "length_bases": 8,
+          "contigs": 1,
+          "sequence_registry_id": "software-fixture-registry",
+          "sequence_registry_file_sha256": "a8fc4382267dd60d9d1016b6390fba201a42a923851eb83d243a9fb540368da1"
+        },
+        "analysis": {
+          "tool": {
+            "name": "example-annotation-tool",
+            "version": "1.2.3",
+            "executable_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "started_at": "2026-10-18T10:00:00+00:00",
+          "finished_at": "2026-10-18T10:02:00+00:00",
+          "parameters": {
+            "mode": "fixture",
+            "threshold": 0.5
+          },
+          "parameters_sha256": "6631ea043291883e9dabd781d4effe25fa62437f23a8ab3a433ad1c8ef8f2782",
+          "reference_data": [
+            {
+              "name": "example-reference-db",
+              "version": "2026-10",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "source_uri": "https://example.org/reference-db"
+            }
+          ],
+          "environment": {
+            "runtime": "Python 3.12",
+            "platform": "test"
+          }
+        },
+        "outputs": [
+          {
+            "role": "primary",
+            "path": "outputs/features.json",
+            "format": "json",
+            "media_type": "application/json",
+            "sha256": "7d810f6e2d2effad4d0d20894960c52b76d89d0dc7a9ea04a4ea44493381c24d",
+            "size_bytes": 36
+          },
+          {
+            "role": "raw",
+            "path": "outputs/tool-output.gff3",
+            "format": "gff3",
+            "media_type": "text/gff3",
+            "sha256": "cb0e12f4657505160c68c0b9bf7731f4671154b26a9cb9d4548ab146d6f3d0fb",
+            "size_bytes": 45
+          }
+        ],
+        "status": "partial",
+        "limitations": [
+          "Software-only fixture; not a biological result."
+        ],
+        "content_sha256": "34c4987c7ca9b94736708fc5a458089c14e03126548d892f3914d9390e9e5190"
+      }
+    }
+  ],
+  "content_sha256": "42a1eccac09435d7cb57b61532b2f43b61fc2516df0086af9491e857730bf0b9"
+}

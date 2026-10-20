@@ -32,11 +32,11 @@ This is a strong nuisance baseline: a future host-aware model must demonstrate
 that it learns host-phage compatibility beyond merely identifying broad-host-
 range phages.
 
-## Broadest-phage cocktail baseline
+## Offline broadest-phage union-coverage baseline
 
 Phages are ranked using training strains only.
 
-| k | Selected phages | Naive independence estimate | Actual held-out coverage |
+| k | Selected phages | Naive independence estimate | Held-out single-phage union coverage |
 | ---: | --- | ---: | ---: |
 | 1 | DIJ07_P2 | 67.74% | 61.54% |
 | 2 | DIJ07_P2, 536_P7 | 88.03% | 73.08% |
@@ -52,6 +52,9 @@ cocktail design must account for redundant host ranges and dependencies.
 Coverage is calculated only when the test matrix has an explicit observed outcome
 for every selected-phage/held-out-strain pair. Missing pairs are unknown, not
 negative; evaluation fails closed rather than silently shrinking the denominator.
+
+Union coverage is calculated from separate pair labels, not measured mixtures.
+It cannot establish cocktail synergy, antagonism or efficacy.
 
 These numbers are a fixed development benchmark, not a final estimate of model
 performance. The source label's exact assay definition and mapping to

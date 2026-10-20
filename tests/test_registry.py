@@ -8,6 +8,19 @@ import pytest
 from phage_cocktail.registry import load_dataset_manifest, verify_registered_dataset
 
 
+def test_source_endpoint_preserves_unverified_semantics():
+    from phage_cocktail.registry import source_endpoint_from_manifest
+
+    path = Path(__file__).resolve().parents[1] / "data/registry/genophi_ecoli_subset.v1.json"
+    endpoint = source_endpoint_from_manifest(path)
+    assert endpoint["kind"] == "source_defined_binary"
+    assert endpoint["assay_definition_status"] == "unverified"
+    assert endpoint["source"]["label_column"] == "interaction"
+    assert endpoint["source"]["sha256"] == load_dataset_manifest(path)["sha256"]
+    stored = json.loads((path.parents[1] / "endpoints/genophi_ecoli_source_interaction.v1.json").read_text())
+    assert endpoint == stored
+
+
 REVISION = "f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f"
 
 
