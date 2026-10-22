@@ -1,0 +1,80 @@
+{
+  "source_revision": "99656d8c020fcd1dbbc30a02ee10274a07655562",
+  "source_raw_rows": 318816,
+  "conflicting_sequence_pairs": 65,
+  "raw_annotation_rows_traced": 1134,
+  "raw_rows_missing": [
+    {
+      "bacterium": "536",
+      "phage": "BCH953_P4"
+    },
+    {
+      "bacterium": "536",
+      "phage": "BCH953_P5"
+    },
+    {
+      "bacterium": "LF82",
+      "phage": "BCH953_P4"
+    },
+    {
+      "bacterium": "LF82",
+      "phage": "BCH953_P5"
+    }
+  ],
+  "missing_hosts_listed_as_isolation_strains": [
+    "536",
+    "LF82"
+  ],
+  "matched_contexts": 567,
+  "interpretable_contexts": 551,
+  "different_raw_scores_in_matched_context": 147,
+  "pairs_with_different_interpretable_raw_scores": 61,
+  "duplicate_group_metadata": [
+    {
+      "phages": [
+        "BDX03_P1",
+        "BDX03_P2"
+      ],
+      "same_recorded_isolation_host": true,
+      "same_recorded_species": true
+    },
+    {
+      "phages": [
+        "NAN33_P2",
+        "NAN33_P4"
+      ],
+      "same_recorded_isolation_host": true,
+      "same_recorded_species": true
+    },
+    {
+      "phages": [
+        "423_P10",
+        "423_P9"
+      ],
+      "same_recorded_isolation_host": true,
+      "same_recorded_species": true
+    },
+    {
+      "phages": [
+        "BCH953_P4",
+        "BCH953_P5"
+      ],
+      "same_recorded_isolation_host": true,
+      "same_recorded_species": true
+    },
+    {
+      "phages": [
+        "LI10_P1",
+        "LI10_P2"
+      ],
+      "same_recorded_isolation_host": true,
+      "same_recorded_species": true
+    }
+  ],
+  "interpretation": "Different source file IDs/headers and source annotations are preserved. Image scoring, replicate-to-MLC aggregation and physical stock identity are not independently verified. No cause or alternate target label is inferred.",
+  "missingness": "Raw score n remains uninterpretable, never zero",
+  "resources_sha256": {
+    "raw_interactions": "56f7ba5e01d00d1780978f8922397137a42458fa0b6583c91d92425ac9bf3401",
+    "phage_metadata": "c21c2672452609f749b9a6eba3135d1bb814abd8e69e9293971f759711b4f276"
+  }
+}

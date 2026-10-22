@@ -1,0 +1,16 @@
+{
+  "grouping_id": "genophi-phage-neighbours:v1",
+  "purpose": "Operational sequence-neighbour groups for leakage control; not species, genus or functional equivalence",
+  "tool": {"name": "minimap2", "version": "2.31-r1302", "source_revision": "3c28777e7e2dcc90f825de1b9f17a89cca7d4452", "source_url": "https://github.com/lh3/minimap2/tree/v2.31"},
+  "arguments": ["-x", "asm20", "-c", "-P", "--seed", "42", "-t", "2"],
+  "inputs": "All 94 locked single-contig phage genomes, both as reference and query, with unique record IDs; multiple contigs require a new reviewed implementation",
+  "alignment": "Require base-level cg:Z CIGAR; identity is PAF matching bases / alignment block length including gaps; keep both directions and ignore self alignments",
+  "coverage": "For each ordered genome pair, filter blocks by identity; sort by decreasing matches, decreasing block length, then coordinates/strand; greedily retain blocks with no overlap on either genome; sum retained query and target spans separately",
+  "edge": "Union an undirected edge if either direction has at least 0.85 coverage of BOTH complete genomes; always union exact assembly duplicates",
+  "primary_identity": 0.95,
+  "sensitivity_identities": [0.90, 0.99],
+  "minimum_bilateral_coverage": 0.85,
+  "components": "Transitive connected components, represented by lexicographically smallest record ID; endpoints need not all meet pairwise threshold",
+  "limitations": ["Heuristic assembly alignment may miss relatedness; a missing edge is not proof of unrelatedness", "Grouping does not exclude shared individual proteins, RBP domains or distant ancestry", "Thresholds are fixed evaluation choices, not taxonomic or clinical claims", "No infection labels or model metrics select edges, thresholds or seeds"],
+  "documentation": ["https://github.com/lh3/minimap2/blob/v2.31/minimap2.1", "https://github.com/lh3/minimap2/blob/v2.31/README.md"]
+}

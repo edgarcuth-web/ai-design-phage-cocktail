@@ -1,0 +1,25 @@
+{
+  "source_revision": "99656d8c020fcd1dbbc30a02ee10274a07655562",
+  "resources": [
+    {
+      "id": "raw_interactions",
+      "kind": "table",
+      "path": "pair_review/raw_interactions.csv",
+      "url": "https://raw.githubusercontent.com/mdmparis/coli_phage_interactions_2023/99656d8c020fcd1dbbc30a02ee10274a07655562/data/interactions/raw/raw_interactions.csv",
+      "source_path": "data/interactions/raw/raw_interactions.csv",
+      "git_blob_sha": "bee02ea5e74ad9c546bb20240c97476ac5ba6871",
+      "size_bytes": 14567034,
+      "sha256": "56f7ba5e01d00d1780978f8922397137a42458fa0b6583c91d92425ac9bf3401"
+    },
+    {
+      "id": "phage_metadata",
+      "kind": "table",
+      "path": "pair_review/phage_metadata.csv",
+      "url": "https://raw.githubusercontent.com/mdmparis/coli_phage_interactions_2023/99656d8c020fcd1dbbc30a02ee10274a07655562/data/genomics/phages/guelin_collection.csv",
+      "source_path": "data/genomics/phages/guelin_collection.csv",
+      "git_blob_sha": "d76435a1bfd0cf493607fb9cf4e4e904ea1ad6a8",
+      "size_bytes": 11859,
+      "sha256": "c21c2672452609f749b9a6eba3135d1bb814abd8e69e9293971f759711b4f276"
+    }
+  ]
+}

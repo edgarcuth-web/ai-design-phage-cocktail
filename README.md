@@ -140,8 +140,11 @@ See [the full report](docs/host-baseline-results.md) for the split and limitatio
 The next paired-model study has a separate
 [development protocol and executable input preflight](docs/paired-benchmark-protocol.md).
 It audits sequence/label identity and duplicate-genome disagreements without
-training. Phage relatedness groups and split manifests must be locked before fit;
-the already inspected cohort cannot serve as independent release validation.
+training. [The follow-up source review and split freeze](docs/paired-split-freeze.md)
+now fixes 69 operational phage-neighbour groups for the primary scheme and all
+nine development split manifests. It traces source annotation differences without
+relabeling them. Paired fitting is still separate; the already inspected cohort
+cannot serve as independent release validation.
 
 ## Optional GenoPHI genome-aware reference
 
