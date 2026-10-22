@@ -1,0 +1,93 @@
+{
+  "study_id": "genophi-paired-benchmark:v1",
+  "protocol_status": "protocol_proposal_preflight_only",
+  "training_executed": false,
+  "ready_for_training": false,
+  "release_validation_available": false,
+  "summary": {
+    "hosts": 177,
+    "phages": 94,
+    "candidate_pairs": 16638,
+    "observed_pairs": 16597,
+    "unknown_pairs_excluded": 41,
+    "unique_host_assemblies": 177,
+    "unique_phage_assemblies": 89,
+    "host_groups": 147,
+    "defense_features": 137
+  },
+  "source_mlc_counts": {
+    "0": 12784,
+    "1": 1492,
+    "2": 1041,
+    "3": 680,
+    "4": 600
+  },
+  "duplicate_phage_assemblies": {
+    "423_P10": [
+      "423_P10",
+      "423_P9"
+    ],
+    "BCH953_P4": [
+      "BCH953_P4",
+      "BCH953_P5"
+    ],
+    "BDX03_P1": [
+      "BDX03_P1",
+      "BDX03_P2"
+    ],
+    "LI10_P1": [
+      "LI10_P1",
+      "LI10_P2"
+    ],
+    "NAN33_P2": [
+      "NAN33_P2",
+      "NAN33_P4"
+    ]
+  },
+  "sequence_pair_label_disagreement_rows": 130,
+  "sequence_pair_label_disagreement_pairs": 65,
+  "disagreement_interpretation": "Preserve all observations; identical genomes do not prove identical stocks or assay context. No majority vote or recoding.",
+  "phage_relatedness_status": "exact_assembly_identity_only",
+  "blockers": [
+    "Review and lock phage near-neighbour grouping, beyond exact duplicate assemblies",
+    "Review identical-genome label disagreements and freeze retention/weighting policy without majority-vote relabeling",
+    "Freeze row-level split IDs, class/group counts, exclusion reasons and common-model cohorts",
+    "Lock 4-mer extraction, missingness, exact estimator configuration and environment before inspecting new metrics",
+    "Resolve and document dataset reuse terms separately from software licensing",
+    "Finalize and version this development protocol; retain a separate future independent release validation plan"
+  ],
+  "provenance": {
+    "protocol_sha256": "e40ba200550a5bf3477e40dac9c5fd0501756f8df0a2d8a308604122276c8ff2",
+    "resource_lock_sha256": "952c969be8cf52c79e89c06d5acdb0acd759e3f7c58665a623b7dd6ac3964fed",
+    "subset_manifest_sha256": "0fdd836ca207121ac382814302efeedbdb9939b219a76e3130eb554f1b60bc97",
+    "archived_host_split_sha256": "379419cbe87a63d143cfbe97990d1d644c11d284e23227d128f09e311e399fd4",
+    "code_base_revision": "1e2fe0adfc16871000e942f675ef76e72341e934",
+    "code_sha256": {
+      "scripts/audit_pair_benchmark.py": "97f2986ca76a4c20af9fb20aa65938c4474cac7d9e26b63daa32a51a4bc3df20",
+      "src/phage_cocktail/pair_cohort.py": "004ce815da67e3609229f497bf30a38bec0fbe7b923e975236196b0e2026bcfc",
+      "src/phage_cocktail/cohort.py": "f7350aede86b009d2bc446639e98066df97a285bb411afc7111cb8cde1c04429",
+      "src/phage_cocktail/host_study.py": "d2412a868194db6dd69ff7f009ea1630039c6606d56eb7582306c74e18d9cbf8",
+      "src/phage_cocktail/split.py": "1df34b65fa6735cad6545c7dad4a471aca91f30e28c65b061e95fc28bd131ca5",
+      "src/phage_cocktail/data.py": "7ed230c370d99cd451929171ce2a8db76a245d1e1455c37cdeef1f1db366e916",
+      "src/phage_cocktail/registry.py": "21b9a2052906fecf0328ad89029a17d78821fd62704bf03cef0a52ab300e12d2",
+      "src/phage_cocktail/artifacts.py": "e6897f728c5cdf66f207aeb36edfcbd8fd513d662c1e3cef40ffedfc95994c08"
+    },
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.5.4",
+      "pandas": "2.3.3"
+    },
+    "resource_counts_verified": {
+      "host_genome": 177,
+      "phage_genome": 94,
+      "table": 5
+    }
+  },
+  "artifacts_sha256": {
+    "excluded_pairs.csv": "cf45ec993e669860dabcbef0665f47c9e33e94e8b3b67f89baf9e8ae287cd3c5",
+    "host_splits.csv": "379419cbe87a63d143cfbe97990d1d644c11d284e23227d128f09e311e399fd4",
+    "observed_pairs.csv": "4188ac3d640754ef6bce0b4751100c6c60fd64e4d975b21e959feb240cc3228a",
+    "phage_identities.csv": "faad969c2a923c85102451b8c8c569bce5d7331886e79ebd762c8bf81db72f14",
+    "sequence_pair_label_disagreements.csv": "f26a44826a1a4ff759604b3d8928a8df4b332fc5440eb8e95bfbd776b609a32e"
+  }
+}

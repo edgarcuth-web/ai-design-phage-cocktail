@@ -1,0 +1,133 @@
+"""Re-admit locked paired inputs and emit a no-training benchmark preflight."""
+import argparse
+from collections import Counter
+import json
+from pathlib import Path
+import platform
+import shutil
+import subprocess
+import tempfile
+
+import numpy as np
+import pandas as pd
+
+from phage_cocktail.artifacts import atomic_write_json, sha256_file
+from phage_cocktail.cohort import canonical_assembly_digest, curate_mlc, group_hosts
+from phage_cocktail.data import load_interactions
+from phage_cocktail.host_study import _features, verify_resources
+from phage_cocktail.pair_cohort import audit_pair_identities
+from phage_cocktail.registry import verify_registered_dataset
+from phage_cocktail.split import split_by_host_group
+
+
+def run_audit(repo, data_root, outdir, *, fetch=False):
+    repo, outdir = Path(repo).resolve(), Path(outdir).resolve()
+    if outdir.exists():
+        raise ValueError("audit output directory must be new")
+    protocol_path = repo / "data/studies/paired_benchmark.v1.json"
+    protocol = json.loads(protocol_path.read_text())
+    lock_path = repo / protocol["inputs"]["resource_lock"]
+    if sha256_file(lock_path) != protocol["inputs"]["resource_lock_sha256"]:
+        raise ValueError("paired protocol resource lock changed")
+    lock = json.loads(lock_path.read_text())
+    resources = verify_resources(lock, data_root, fetch=fetch)
+    print(f"Verified {len(resources)} locked resources", flush=True)
+    subset = resources[("table", "subset")]
+    verify_registered_dataset(repo / protocol["inputs"]["subset_manifest"], subset)
+    pairs = load_interactions(subset)
+    mlc = pd.read_csv(resources[("table", "mlc")], sep=";", index_col=0)
+    observed, excluded, aliases = curate_mlc(pairs, mlc)
+    hosts = {key: canonical_assembly_digest(path) for (kind, key), path in resources.items()
+             if kind == "host_genome"}
+    phages = {key: canonical_assembly_digest(path) for (kind, key), path in resources.items()
+              if kind == "phage_genome"}
+    phage_groups, conflicts = audit_pair_identities(observed, hosts, phages)
+    distances = pd.read_csv(resources[("table", "core_distances")], sep="\t", index_col=0)
+    host_groups = group_hosts(sorted(hosts), distances, hosts,
+                              threshold=protocol["host_grouping"]["core_distance_threshold"])
+    assigned = split_by_host_group(observed, host_groups, seed=42)
+    host_table = assigned[["bacterium", "host_group", "split"]].drop_duplicates().sort_values("bacterium")
+    host_table["source_bacterium"] = host_table.bacterium.map(aliases)
+    host_table["assembly_sha256"] = host_table.bacterium.map(hosts)
+    archived_path = repo / protocol["inputs"]["archived_host_split"]
+    if sha256_file(archived_path) != protocol["inputs"]["archived_host_split_sha256"]:
+        raise ValueError("archived host split changed")
+    archived = pd.read_csv(archived_path)
+    if not host_table.reset_index(drop=True).equals(archived.reset_index(drop=True)):
+        raise ValueError("recomputed host identity/grouping differs from archived development split")
+    metadata = pd.read_csv(resources[("table", "metadata")], sep=";", index_col=0)
+    defenses = pd.read_csv(resources[("table", "defenses")], sep=";", index_col=0)
+    features, numeric = _features(sorted(hosts), metadata, defenses,
+                                  ["O-type", "H-type", "LPS_type", "ABC_serotype"])
+    counts = features[numeric].to_numpy(dtype=float)
+    if not np.isfinite(counts).all() or (counts < 0).any():
+        raise ValueError("invalid defense feature counts")
+    summary = {"hosts": len(hosts), "phages": len(phages), "candidate_pairs": len(pairs),
+               "observed_pairs": len(observed), "unknown_pairs_excluded": len(excluded),
+               "unique_host_assemblies": len(set(hosts.values())),
+               "unique_phage_assemblies": len(set(phages.values())),
+               "host_groups": len(set(host_groups.values())), "defense_features": len(numeric)}
+    for name, expected in protocol["expected_cohort"].items():
+        if summary.get(name) != expected:
+            raise ValueError(f"cohort changed: {name}: {summary.get(name)} != {expected}")
+    print(json.dumps(summary), flush=True)
+    outdir.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(prefix=".pair-audit-", dir=outdir.parent))
+    try:
+        assigned.to_csv(staging / "observed_pairs.csv", index=False)
+        excluded.to_csv(staging / "excluded_pairs.csv", index=False)
+        host_table.to_csv(staging / "host_splits.csv", index=False)
+        pd.DataFrame([{"phage": name, "assembly_sha256": phages[name],
+                       "exact_phage_group": phage_groups[name]} for name in sorted(phages)]).to_csv(
+            staging / "phage_identities.csv", index=False)
+        conflicts.to_csv(staging / "sequence_pair_label_disagreements.csv", index=False)
+        sizes = Counter(phage_groups.values())
+        duplicates = {group: sorted(p for p, g in phage_groups.items() if g == group)
+                      for group, size in sizes.items() if size > 1}
+        report = {
+            "study_id": protocol["study_id"], "protocol_status": protocol["status"],
+            "training_executed": False, "ready_for_training": False,
+            "release_validation_available": False, "summary": summary,
+            "source_mlc_counts": observed.source_mlc.value_counts().sort_index().to_dict(),
+            "duplicate_phage_assemblies": duplicates,
+            "sequence_pair_label_disagreement_rows": len(conflicts),
+            "sequence_pair_label_disagreement_pairs": len(conflicts[
+                ["host_assembly_sha256", "phage_assembly_sha256"]].drop_duplicates()),
+            "disagreement_interpretation": "Preserve all observations; identical genomes do not prove identical stocks or assay context. No majority vote or recoding.",
+            "phage_relatedness_status": "exact_assembly_identity_only",
+            "blockers": protocol["before_any_fit"],
+            "provenance": {
+                "protocol_sha256": sha256_file(protocol_path), "resource_lock_sha256": sha256_file(lock_path),
+                "subset_manifest_sha256": sha256_file(repo / protocol["inputs"]["subset_manifest"]),
+                "archived_host_split_sha256": sha256_file(archived_path),
+                "code_base_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip(),
+                "code_sha256": {p.relative_to(repo).as_posix(): sha256_file(p) for p in (
+                    Path(__file__).resolve(), repo / "src/phage_cocktail/pair_cohort.py",
+                    repo / "src/phage_cocktail/cohort.py", repo / "src/phage_cocktail/host_study.py",
+                    repo / "src/phage_cocktail/split.py", repo / "src/phage_cocktail/data.py",
+                    repo / "src/phage_cocktail/registry.py", repo / "src/phage_cocktail/artifacts.py")},
+                "versions": {"python": platform.python_version(), "numpy": np.__version__, "pandas": pd.__version__},
+                "resource_counts_verified": dict(Counter(kind for kind, _ in resources)),
+            },
+            "artifacts_sha256": {p.name: sha256_file(p) for p in sorted(staging.iterdir())},
+        }
+        atomic_write_json(report, staging / "report.json")
+        staging.rename(outdir)
+        return report
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--data-root", type=Path, default=Path("data/raw/genophi_host_study"))
+    parser.add_argument("--outdir", type=Path, required=True)
+    parser.add_argument("--fetch", action="store_true", help="Download missing locked public resources")
+    args = parser.parse_args()
+    report = run_audit(Path(__file__).resolve().parents[1], args.data_root, args.outdir, fetch=args.fetch)
+    print(f"Preflight complete; training remains blocked: {report['blockers']}")
+
+
+if __name__ == "__main__":
+    main()

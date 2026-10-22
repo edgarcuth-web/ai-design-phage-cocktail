@@ -135,6 +135,14 @@ Test AP is 0.5413 versus 0.4952 for per-phage prevalence; the paired 95% AP-gain
 interval is [-0.0229, 0.1092]. This is inconclusive, and Brier/log loss are worse.
 See [the full report](docs/host-baseline-results.md) for the split and limitations.
 
+## Paired benchmark protocol
+
+The next paired-model study has a separate
+[development protocol and executable input preflight](docs/paired-benchmark-protocol.md).
+It audits sequence/label identity and duplicate-genome disagreements without
+training. Phage relatedness groups and split manifests must be locked before fit;
+the already inspected cohort cannot serve as independent release validation.
+
 ## Optional GenoPHI genome-aware reference
 
 GenoPHI's official 25-strain x 25-phage protein-family demo can verify the path
