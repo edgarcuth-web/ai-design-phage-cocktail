@@ -1,0 +1,106 @@
+{
+  "study_id": "genophi-paired-benchmark:v1",
+  "status": "protocol_proposal_preflight_only",
+  "target": "Observed source MLC > 0; uncalibrated research scores only",
+  "inputs": {
+    "resource_lock": "data/studies/genophi_host_baseline.resources.v1.json",
+    "resource_lock_sha256": "952c969be8cf52c79e89c06d5acdb0acd759e3f7c58665a623b7dd6ac3964fed",
+    "subset_manifest": "data/registry/genophi_ecoli_subset.v1.json",
+    "archived_host_split": "data/studies/results/genophi_host_split.v1.csv",
+    "archived_host_split_sha256": "379419cbe87a63d143cfbe97990d1d644c11d284e23227d128f09e311e399fd4"
+  },
+  "expected_cohort": {
+    "hosts": 177,
+    "phages": 94,
+    "candidate_pairs": 16638,
+    "observed_pairs": 16597,
+    "unknown_pairs_excluded": 41,
+    "unique_host_assemblies": 177,
+    "unique_phage_assemblies": 89,
+    "host_groups": 147,
+    "defense_features": 137
+  },
+  "labels": {
+    "positive": "Observed MLC in {1,2,3,4}",
+    "negative": "Explicit observed MLC == 0",
+    "unknown": "Missing MLC: exclude with row-level reason; never impute zero",
+    "discordant_sequence_pairs": "Keep source observations and report disagreement; never majority-vote or collapse without reviewed context",
+    "weighting": "Primary: original observation rows have equal weight. Prespecified sensitivity: each exact sequence pair has equal total weight in fit and metrics. Report both; never select the favorable result.",
+    "mechanistic_mapping": "not_verified"
+  },
+  "host_grouping": {
+    "core_distance_threshold": 0.0001,
+    "rule": "Reuse the existing connected-component rule for core distance below threshold or exact assembly identity; recompute and compare archived host membership"
+  },
+  "phage_grouping": {
+    "exact_identity": "canonical_assembly_digest; all identical sequences share one group",
+    "relatedness_status": "requires_reviewed_sequence_similarity_graph_before_training",
+    "required_lock": ["tool/version", "parameters", "genome coverage and similarity definition", "exact-duplicate union", "membership and edge hashes", "sensitivity analysis"]
+  },
+  "splitting": {
+    "purpose": "development_only_already_inspected_source",
+    "fractions_by_group": [0.7, 0.15, 0.15],
+    "primary_seed": 42,
+    "sensitivity_seeds": [43, 44],
+    "assignment": "Use split_by_host_group ordering independently on each reviewed host/phage group map; no label stratification or seed search",
+    "fit_rectangle": "H_train x P_train, minus warm-pair validation/test masks",
+    "warm_pair_mask": "SHA256 of UTF-8 seed:host_assembly_sha256:phage_assembly_sha256 modulo 100; 0..4 validation, 5..9 test, 10..99 fit; identical sequence pairs share a mask; fail if any intended seen group disappears from fit",
+    "regimes": {
+      "warm_pair": {"validation": "masked H_train x P_train", "test": "masked H_train x P_train"},
+      "cold_host": {"validation": "H_validation x P_train", "test": "H_test x P_train"},
+      "cold_phage": {"validation": "H_train x P_validation", "test": "H_train x P_test"},
+      "double_cold": {"validation": "H_validation x P_validation", "test": "H_test x P_test"}
+    },
+    "unused_rectangles": ["H_validation x P_test", "H_test x P_validation"],
+    "independent_release_holdout": "not_available; a new split of these labels does not create independence"
+  },
+  "minimal_models": [
+    {"id": "global_prevalence", "support": "all regimes; train-only Beta(1,1)"},
+    {"id": "phage_prevalence", "support": "seen-phage regimes only; unseen phages explicitly unsupported"},
+    {"id": "legacy_host_logistic_refit", "support": "seen-phage regimes only; refit existing fixed baseline on the new fit rows, never use all-phage frozen weights"},
+    {"id": "host_only_pooled_logistic", "support": "all regimes; published host feature block only"},
+    {"id": "phage_only_logistic", "support": "all regimes; canonical phage DNA 4-mer frequencies"},
+    {"id": "host_phage_additive_logistic", "support": "all regimes; concatenate the same host and phage blocks; tests paired information, not explicit mechanistic interactions"}
+  ],
+  "model_selection": {
+    "preprocessing": "Fit imputation/scaling/category vocabulary on fit rows only; unique entities for entity-level statistics",
+    "logistic_C": [0.01, 0.1, 1.0],
+    "logistic_solver": "lbfgs",
+    "logistic_max_iter": 2000,
+    "selection_metric": "cold_phage validation pooled AP; deterministic lower-C tie break; no test-driven selection",
+    "seen_phage_only_models": "Keep the historical fixed parameters; do not invent unsupported cold-phage scores",
+    "nonconvergence": "fail and report; no silent model or feature change"
+  },
+  "proposed_phage_features": {
+    "representation": "Canonical DNA 4-mer frequencies; merge each k-mer with its reverse complement using lexical minimum; use the sorted 136-category vocabulary",
+    "boundaries": "Count within contigs only; skip windows containing non-ACGT bases; divide by the total valid 4-mer count",
+    "missingness": "Missing sequence or no valid windows is unsupported, never an all-zero biological vector",
+    "scope": "A compositional baseline, not an RBP, antidefense or causal mechanism representation"
+  },
+  "evaluation": {
+    "primary_regime": "cold_phage",
+    "primary_contrast": "host_phage_additive_logistic minus host_only_pooled_logistic pooled AP",
+    "secondary": ["cold_host", "double_cold", "warm_pair", "phage-only and prevalence comparators"],
+    "metrics": ["pooled AP", "AUROC", "Brier", "log_loss", "macro per-host/per-phage AP with undefined counts", "support/abstention coverage"],
+    "bootstrap_unit": {"cold_host": "host group; fixed seen-phage panel", "cold_phage": "phage group; fixed seen-host panel", "double_cold": "independent host/phage group resampling with multiplicity product", "warm_pair": "independent host/phage group resampling with multiplicity product"},
+    "bootstrap_resamples": 2000,
+    "bootstrap_seed": 20261022,
+    "minimum_resampled_groups_for_interval": 5,
+    "interval": "paired percentile 95%; discard/report single-class draws, never replace undefined metrics with zero",
+    "improvement_rule": "Primary lower AP-gain bound > 0; insufficient groups/classes means descriptive only; no release or biological-mechanism claim",
+    "inference_scope": "Development intervals conditional on this source/panel; not independent prospective validation"
+  },
+  "extensions": {
+    "pretrained_representation": "Optional separate experiment after locking checkpoint/tokenizer/pooling/windows/compute budget and pretraining-overlap limitations; no model selected yet",
+    "mechanism_ablation": "Remove existing defense and surface blocks separately, then add antidefense/prophage only when annotated and reviewed; use the same admitted rows and treat dataset/condition changes as a new comparison",
+    "calibration_ood": "No probability promotion; any later calibration uses validation only and a separate release plan. Unsupported inputs abstain explicitly. Empirical OOD performance remains untested."
+  },
+  "before_any_fit": [
+    "Review and lock phage near-neighbour grouping, beyond exact duplicate assemblies",
+    "Review identical-genome label disagreements and freeze retention/weighting policy without majority-vote relabeling",
+    "Freeze row-level split IDs, class/group counts, exclusion reasons and common-model cohorts",
+    "Lock 4-mer extraction, missingness, exact estimator configuration and environment before inspecting new metrics",
+    "Resolve and document dataset reuse terms separately from software licensing",
+    "Finalize and version this development protocol; retain a separate future independent release validation plan"
+  ]
+}

@@ -1,0 +1,933 @@
+{
+  "freeze_id": "genophi-paired-splits:v1",
+  "training_executed": false,
+  "primary_identity": 0.95,
+  "primary_seed": 42,
+  "source_review": {
+    "source_revision": "99656d8c020fcd1dbbc30a02ee10274a07655562",
+    "source_raw_rows": 318816,
+    "conflicting_sequence_pairs": 65,
+    "raw_annotation_rows_traced": 1134,
+    "raw_rows_missing": [
+      {
+        "bacterium": "536",
+        "phage": "BCH953_P4"
+      },
+      {
+        "bacterium": "536",
+        "phage": "BCH953_P5"
+      },
+      {
+        "bacterium": "LF82",
+        "phage": "BCH953_P4"
+      },
+      {
+        "bacterium": "LF82",
+        "phage": "BCH953_P5"
+      }
+    ],
+    "missing_hosts_listed_as_isolation_strains": [
+      "536",
+      "LF82"
+    ],
+    "matched_contexts": 567,
+    "interpretable_contexts": 551,
+    "different_raw_scores_in_matched_context": 147,
+    "pairs_with_different_interpretable_raw_scores": 61,
+    "duplicate_group_metadata": [
+      {
+        "phages": [
+          "BDX03_P1",
+          "BDX03_P2"
+        ],
+        "same_recorded_isolation_host": true,
+        "same_recorded_species": true
+      },
+      {
+        "phages": [
+          "NAN33_P2",
+          "NAN33_P4"
+        ],
+        "same_recorded_isolation_host": true,
+        "same_recorded_species": true
+      },
+      {
+        "phages": [
+          "423_P10",
+          "423_P9"
+        ],
+        "same_recorded_isolation_host": true,
+        "same_recorded_species": true
+      },
+      {
+        "phages": [
+          "BCH953_P4",
+          "BCH953_P5"
+        ],
+        "same_recorded_isolation_host": true,
+        "same_recorded_species": true
+      },
+      {
+        "phages": [
+          "LI10_P1",
+          "LI10_P2"
+        ],
+        "same_recorded_isolation_host": true,
+        "same_recorded_species": true
+      }
+    ],
+    "interpretation": "Different source file IDs/headers and source annotations are preserved. Image scoring, replicate-to-MLC aggregation and physical stock identity are not independently verified. No cause or alternate target label is inferred.",
+    "missingness": "Raw score n remains uninterpretable, never zero",
+    "resources_sha256": {
+      "raw_interactions": "56f7ba5e01d00d1780978f8922397137a42458fa0b6583c91d92425ac9bf3401",
+      "phage_metadata": "c21c2672452609f749b9a6eba3135d1bb814abd8e69e9293971f759711b4f276"
+    }
+  },
+  "scenarios": [
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "phage_groups": 69,
+      "edges": 30,
+      "cells": [
+        {
+          "regime": "cold_host",
+          "partition": "test",
+          "rows": 2210,
+          "positive": 572,
+          "host_groups": 22,
+          "phage_groups": 48
+        },
+        {
+          "regime": "cold_host",
+          "partition": "validation",
+          "rows": 1690,
+          "positive": 305,
+          "host_groups": 22,
+          "phage_groups": 48
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "test",
+          "rows": 1633,
+          "positive": 314,
+          "host_groups": 103,
+          "phage_groups": 10
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "validation",
+          "rows": 1746,
+          "positive": 508,
+          "host_groups": 103,
+          "phage_groups": 11
+        },
+        {
+          "regime": "double_cold",
+          "partition": "test",
+          "rows": 476,
+          "positive": 108,
+          "host_groups": 22,
+          "phage_groups": 10
+        },
+        {
+          "regime": "double_cold",
+          "partition": "validation",
+          "rows": 390,
+          "positive": 104,
+          "host_groups": 22,
+          "phage_groups": 11
+        },
+        {
+          "regime": "fit",
+          "partition": "fit",
+          "rows": 6834,
+          "positive": 1493,
+          "host_groups": 103,
+          "phage_groups": 48
+        },
+        {
+          "regime": "unused",
+          "partition": "unused",
+          "rows": 874,
+          "positive": 251,
+          "host_groups": 44,
+          "phage_groups": 21
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "test",
+          "rows": 370,
+          "positive": 81,
+          "host_groups": 95,
+          "phage_groups": 48
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "validation",
+          "rows": 374,
+          "positive": 77,
+          "host_groups": 98,
+          "phage_groups": 48
+        }
+      ]
+    },
+    {
+      "identity": 0.95,
+      "seed": 43,
+      "phage_groups": 69,
+      "edges": 30,
+      "cells": [
+        {
+          "regime": "cold_host",
+          "partition": "test",
+          "rows": 1701,
+          "positive": 344,
+          "host_groups": 22,
+          "phage_groups": 48
+        },
+        {
+          "regime": "cold_host",
+          "partition": "validation",
+          "rows": 1553,
+          "positive": 328,
+          "host_groups": 22,
+          "phage_groups": 48
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "test",
+          "rows": 1750,
+          "positive": 348,
+          "host_groups": 103,
+          "phage_groups": 10
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "validation",
+          "rows": 2125,
+          "positive": 712,
+          "host_groups": 103,
+          "phage_groups": 11
+        },
+        {
+          "regime": "double_cold",
+          "partition": "test",
+          "rows": 378,
+          "positive": 73,
+          "host_groups": 22,
+          "phage_groups": 10
+        },
+        {
+          "regime": "double_cold",
+          "partition": "validation",
+          "rows": 417,
+          "positive": 120,
+          "host_groups": 22,
+          "phage_groups": 11
+        },
+        {
+          "regime": "fit",
+          "partition": "fit",
+          "rows": 7165,
+          "positive": 1522,
+          "host_groups": 103,
+          "phage_groups": 48
+        },
+        {
+          "regime": "unused",
+          "partition": "unused",
+          "rows": 800,
+          "positive": 205,
+          "host_groups": 44,
+          "phage_groups": 21
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "test",
+          "rows": 345,
+          "positive": 79,
+          "host_groups": 97,
+          "phage_groups": 47
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "validation",
+          "rows": 363,
+          "positive": 82,
+          "host_groups": 96,
+          "phage_groups": 48
+        }
+      ]
+    },
+    {
+      "identity": 0.95,
+      "seed": 44,
+      "phage_groups": 69,
+      "edges": 30,
+      "cells": [
+        {
+          "regime": "cold_host",
+          "partition": "test",
+          "rows": 1465,
+          "positive": 239,
+          "host_groups": 22,
+          "phage_groups": 48
+        },
+        {
+          "regime": "cold_host",
+          "partition": "validation",
+          "rows": 1560,
+          "positive": 291,
+          "host_groups": 22,
+          "phage_groups": 48
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "test",
+          "rows": 1560,
+          "positive": 253,
+          "host_groups": 103,
+          "phage_groups": 10
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "validation",
+          "rows": 2210,
+          "positive": 441,
+          "host_groups": 103,
+          "phage_groups": 11
+        },
+        {
+          "regime": "double_cold",
+          "partition": "test",
+          "rows": 270,
+          "positive": 25,
+          "host_groups": 22,
+          "phage_groups": 10
+        },
+        {
+          "regime": "double_cold",
+          "partition": "validation",
+          "rows": 408,
+          "positive": 51,
+          "host_groups": 22,
+          "phage_groups": 11
+        },
+        {
+          "regime": "fit",
+          "partition": "fit",
+          "rows": 7565,
+          "positive": 2187,
+          "host_groups": 103,
+          "phage_groups": 48
+        },
+        {
+          "regime": "unused",
+          "partition": "unused",
+          "rows": 676,
+          "positive": 71,
+          "host_groups": 44,
+          "phage_groups": 21
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "test",
+          "rows": 427,
+          "positive": 124,
+          "host_groups": 100,
+          "phage_groups": 48
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "validation",
+          "rows": 456,
+          "positive": 131,
+          "host_groups": 103,
+          "phage_groups": 48
+        }
+      ]
+    },
+    {
+      "identity": 0.9,
+      "seed": 42,
+      "phage_groups": 50,
+      "edges": 91,
+      "cells": [
+        {
+          "regime": "cold_host",
+          "partition": "test",
+          "rows": 2414,
+          "positive": 630,
+          "host_groups": 22,
+          "phage_groups": 35
+        },
+        {
+          "regime": "cold_host",
+          "partition": "validation",
+          "rows": 1846,
+          "positive": 335,
+          "host_groups": 22,
+          "phage_groups": 35
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "test",
+          "rows": 1166,
+          "positive": 276,
+          "host_groups": 103,
+          "phage_groups": 7
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "validation",
+          "rows": 1518,
+          "positive": 400,
+          "host_groups": 103,
+          "phage_groups": 8
+        },
+        {
+          "regime": "double_cold",
+          "partition": "test",
+          "rows": 340,
+          "positive": 97,
+          "host_groups": 22,
+          "phage_groups": 7
+        },
+        {
+          "regime": "double_cold",
+          "partition": "validation",
+          "rows": 338,
+          "positive": 93,
+          "host_groups": 22,
+          "phage_groups": 8
+        },
+        {
+          "regime": "fit",
+          "partition": "fit",
+          "rows": 7448,
+          "positive": 1621,
+          "host_groups": 103,
+          "phage_groups": 35
+        },
+        {
+          "regime": "unused",
+          "partition": "unused",
+          "rows": 702,
+          "positive": 185,
+          "host_groups": 44,
+          "phage_groups": 15
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "test",
+          "rows": 418,
+          "positive": 96,
+          "host_groups": 99,
+          "phage_groups": 35
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "validation",
+          "rows": 407,
+          "positive": 80,
+          "host_groups": 100,
+          "phage_groups": 35
+        }
+      ]
+    },
+    {
+      "identity": 0.9,
+      "seed": 43,
+      "phage_groups": 50,
+      "edges": 91,
+      "cells": [
+        {
+          "regime": "cold_host",
+          "partition": "test",
+          "rows": 1944,
+          "positive": 428,
+          "host_groups": 22,
+          "phage_groups": 35
+        },
+        {
+          "regime": "cold_host",
+          "partition": "validation",
+          "rows": 1768,
+          "positive": 405,
+          "host_groups": 22,
+          "phage_groups": 35
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "test",
+          "rows": 1250,
+          "positive": 206,
+          "host_groups": 103,
+          "phage_groups": 7
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "validation",
+          "rows": 1500,
+          "positive": 371,
+          "host_groups": 103,
+          "phage_groups": 8
+        },
+        {
+          "regime": "double_cold",
+          "partition": "test",
+          "rows": 270,
+          "positive": 43,
+          "host_groups": 22,
+          "phage_groups": 7
+        },
+        {
+          "regime": "double_cold",
+          "partition": "validation",
+          "rows": 299,
+          "positive": 70,
+          "host_groups": 22,
+          "phage_groups": 8
+        },
+        {
+          "regime": "fit",
+          "partition": "fit",
+          "rows": 8191,
+          "positive": 1967,
+          "host_groups": 103,
+          "phage_groups": 35
+        },
+        {
+          "regime": "unused",
+          "partition": "unused",
+          "rows": 568,
+          "positive": 124,
+          "host_groups": 44,
+          "phage_groups": 15
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "test",
+          "rows": 377,
+          "positive": 93,
+          "host_groups": 100,
+          "phage_groups": 35
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "validation",
+          "rows": 430,
+          "positive": 106,
+          "host_groups": 98,
+          "phage_groups": 35
+        }
+      ]
+    },
+    {
+      "identity": 0.9,
+      "seed": 44,
+      "phage_groups": 50,
+      "edges": 91,
+      "cells": [
+        {
+          "regime": "cold_host",
+          "partition": "test",
+          "rows": 1306,
+          "positive": 243,
+          "host_groups": 22,
+          "phage_groups": 35
+        },
+        {
+          "regime": "cold_host",
+          "partition": "validation",
+          "rows": 1392,
+          "positive": 290,
+          "host_groups": 22,
+          "phage_groups": 35
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "test",
+          "rows": 2860,
+          "positive": 509,
+          "host_groups": 103,
+          "phage_groups": 7
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "validation",
+          "rows": 1820,
+          "positive": 251,
+          "host_groups": 103,
+          "phage_groups": 8
+        },
+        {
+          "regime": "double_cold",
+          "partition": "test",
+          "rows": 496,
+          "positive": 38,
+          "host_groups": 22,
+          "phage_groups": 7
+        },
+        {
+          "regime": "double_cold",
+          "partition": "validation",
+          "rows": 336,
+          "positive": 26,
+          "host_groups": 22,
+          "phage_groups": 8
+        },
+        {
+          "regime": "fit",
+          "partition": "fit",
+          "rows": 6747,
+          "positive": 2124,
+          "host_groups": 103,
+          "phage_groups": 35
+        },
+        {
+          "regime": "unused",
+          "partition": "unused",
+          "rows": 849,
+          "positive": 80,
+          "host_groups": 44,
+          "phage_groups": 15
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "test",
+          "rows": 376,
+          "positive": 120,
+          "host_groups": 94,
+          "phage_groups": 35
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "validation",
+          "rows": 415,
+          "positive": 132,
+          "host_groups": 101,
+          "phage_groups": 35
+        }
+      ]
+    },
+    {
+      "identity": 0.99,
+      "seed": 42,
+      "phage_groups": 84,
+      "edges": 10,
+      "cells": [
+        {
+          "regime": "cold_host",
+          "partition": "test",
+          "rows": 2312,
+          "positive": 619,
+          "host_groups": 22,
+          "phage_groups": 59
+        },
+        {
+          "regime": "cold_host",
+          "partition": "validation",
+          "rows": 1768,
+          "positive": 335,
+          "host_groups": 22,
+          "phage_groups": 59
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "test",
+          "rows": 1400,
+          "positive": 291,
+          "host_groups": 103,
+          "phage_groups": 12
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "validation",
+          "rows": 1630,
+          "positive": 406,
+          "host_groups": 103,
+          "phage_groups": 13
+        },
+        {
+          "regime": "double_cold",
+          "partition": "test",
+          "rows": 408,
+          "positive": 101,
+          "host_groups": 22,
+          "phage_groups": 12
+        },
+        {
+          "regime": "double_cold",
+          "partition": "validation",
+          "rows": 364,
+          "positive": 86,
+          "host_groups": 22,
+          "phage_groups": 13
+        },
+        {
+          "regime": "fit",
+          "partition": "fit",
+          "rows": 7144,
+          "positive": 1606,
+          "host_groups": 103,
+          "phage_groups": 59
+        },
+        {
+          "regime": "unused",
+          "partition": "unused",
+          "rows": 788,
+          "positive": 199,
+          "host_groups": 44,
+          "phage_groups": 25
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "test",
+          "rows": 398,
+          "positive": 89,
+          "host_groups": 97,
+          "phage_groups": 59
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "validation",
+          "rows": 385,
+          "positive": 81,
+          "host_groups": 99,
+          "phage_groups": 59
+        }
+      ]
+    },
+    {
+      "identity": 0.99,
+      "seed": 43,
+      "phage_groups": 84,
+      "edges": 10,
+      "cells": [
+        {
+          "regime": "cold_host",
+          "partition": "test",
+          "rows": 1782,
+          "positive": 358,
+          "host_groups": 22,
+          "phage_groups": 59
+        },
+        {
+          "regime": "cold_host",
+          "partition": "validation",
+          "rows": 1628,
+          "positive": 343,
+          "host_groups": 22,
+          "phage_groups": 59
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "test",
+          "rows": 1625,
+          "positive": 366,
+          "host_groups": 103,
+          "phage_groups": 12
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "validation",
+          "rows": 1875,
+          "positive": 628,
+          "host_groups": 103,
+          "phage_groups": 13
+        },
+        {
+          "regime": "double_cold",
+          "partition": "test",
+          "rows": 351,
+          "positive": 74,
+          "host_groups": 22,
+          "phage_groups": 12
+        },
+        {
+          "regime": "double_cold",
+          "partition": "validation",
+          "rows": 367,
+          "positive": 104,
+          "host_groups": 22,
+          "phage_groups": 13
+        },
+        {
+          "regime": "fit",
+          "partition": "fit",
+          "rows": 7512,
+          "positive": 1582,
+          "host_groups": 103,
+          "phage_groups": 59
+        },
+        {
+          "regime": "unused",
+          "partition": "unused",
+          "rows": 721,
+          "positive": 191,
+          "host_groups": 44,
+          "phage_groups": 25
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "test",
+          "rows": 357,
+          "positive": 80,
+          "host_groups": 98,
+          "phage_groups": 57
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "validation",
+          "rows": 379,
+          "positive": 87,
+          "host_groups": 97,
+          "phage_groups": 59
+        }
+      ]
+    },
+    {
+      "identity": 0.99,
+      "seed": 44,
+      "phage_groups": 84,
+      "edges": 10,
+      "cells": [
+        {
+          "regime": "cold_host",
+          "partition": "test",
+          "rows": 1511,
+          "positive": 241,
+          "host_groups": 22,
+          "phage_groups": 59
+        },
+        {
+          "regime": "cold_host",
+          "partition": "validation",
+          "rows": 1608,
+          "positive": 287,
+          "host_groups": 22,
+          "phage_groups": 59
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "test",
+          "rows": 1690,
+          "positive": 290,
+          "host_groups": 103,
+          "phage_groups": 12
+        },
+        {
+          "regime": "cold_phage",
+          "partition": "validation",
+          "rows": 1820,
+          "positive": 412,
+          "host_groups": 103,
+          "phage_groups": 13
+        },
+        {
+          "regime": "double_cold",
+          "partition": "test",
+          "rows": 293,
+          "positive": 32,
+          "host_groups": 22,
+          "phage_groups": 12
+        },
+        {
+          "regime": "double_cold",
+          "partition": "validation",
+          "rows": 336,
+          "positive": 52,
+          "host_groups": 22,
+          "phage_groups": 13
+        },
+        {
+          "regime": "fit",
+          "partition": "fit",
+          "rows": 7794,
+          "positive": 2178,
+          "host_groups": 103,
+          "phage_groups": 59
+        },
+        {
+          "regime": "unused",
+          "partition": "unused",
+          "rows": 631,
+          "positive": 65,
+          "host_groups": 44,
+          "phage_groups": 25
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "test",
+          "rows": 447,
+          "positive": 126,
+          "host_groups": 102,
+          "phage_groups": 58
+        },
+        {
+          "regime": "warm_pair",
+          "partition": "validation",
+          "rows": 467,
+          "positive": 130,
+          "host_groups": 103,
+          "phage_groups": 59
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "grouping_sha256": "cc31b0fb92bebda64afa44012f5d0d990da8fe7d201654303309ad5aa4c0d23b",
+    "preflight_report_sha256": "6ceb2af1f268184c5966a9532c33d9e47367bf393ed555ab9a4f730737be6f5a",
+    "resource_lock_sha256": "952c969be8cf52c79e89c06d5acdb0acd759e3f7c58665a623b7dd6ac3964fed",
+    "source_review_lock_sha256": "2a7991913b4535c3d3027e2ea77d96b1bf92c29fca9b15ab4740031b88883de3",
+    "minimap2_version": "2.31-r1302",
+    "minimap2_binary_sha256": "b0d8cee9913e2d67ff786b971cd672a2103dba5e97514838e0a49591ddaf9575",
+    "command": [
+      "minimap2",
+      "-x",
+      "asm20",
+      "-c",
+      "-P",
+      "--seed",
+      "42",
+      "-t",
+      "2",
+      "phages.fasta",
+      "phages.fasta"
+    ],
+    "combined_fasta_sha256": "ba24fd554f242b2e5e38db5c317e1452b81fb1cb856dbe1bd2eb63fc0f40cfa5",
+    "code_sha256": {
+      "scripts/freeze_paired_splits.py": "ad83043fecbb2974b7eef235a8e5801c816e8488396f3b8c76faab6be1bfec3a",
+      "src/phage_cocktail/paired_splits.py": "23e3d8e2a1d8c8a3ccffd4d7cd4ac894626d5a637f64f2157adf5706f1dc9eff",
+      "src/phage_cocktail/split.py": "1df34b65fa6735cad6545c7dad4a471aca91f30e28c65b061e95fc28bd131ca5",
+      "src/phage_cocktail/pair_cohort.py": "004ce815da67e3609229f497bf30a38bec0fbe7b923e975236196b0e2026bcfc"
+    }
+  },
+  "artifacts_sha256": {
+    "alignments.paf.gz": "591cef01d451ebd7ada794681706e2a18b6d63269cdb18308d1e346083f1b711",
+    "paired_split_i90_s42.csv.gz": "4ebbcc5ee5dee6d4a7b6a3dc8bf44697bc207d6218b18beb47ca61c41304b139",
+    "paired_split_i90_s43.csv.gz": "cc75d0e8b857479f40824b773c8a50cf533a3b00cd98d8f874110e0a09ea62a0",
+    "paired_split_i90_s44.csv.gz": "24c9727e3f52a25401bf6d01f049f3499e561baa65130a8e7f4e4301eb9b4e3d",
+    "paired_split_i95_s42.csv.gz": "4da5357d2e530c1b6b4725a0b461c6ca66fbdb64b380f3b6a5b55d1cdfdda0b3",
+    "paired_split_i95_s43.csv.gz": "f63288c4e19db6779f1214fdae32903a8439633c2a7842f5a6c7ad01b7c9fd4a",
+    "paired_split_i95_s44.csv.gz": "6fb5de695d3184552bd98f96894bfd49fadcd7536c87ded52fee8196a075de01",
+    "paired_split_i99_s42.csv.gz": "1dfbe21eedcd3e8fe4eea3932be77711d0c5979ef4738dc413bc5d21214b8723",
+    "paired_split_i99_s43.csv.gz": "0596aaa74b1d8daf76ac4614a5575fe3bb0ddaf65ad75b32b68ef4eba5eb65c0",
+    "paired_split_i99_s44.csv.gz": "40306719590381508e359943c170764904f3118a879d22aef4ed0fdd137b5446",
+    "phage_edges_i90.csv": "6eedb607bcfc0e8371dd76cee286e44e6e22a53484370a31a2099b62bc0e926e",
+    "phage_edges_i95.csv": "def43160e2a5ba95d4dc48d3e4c3972d84c27398c0d1c98c4b7480c325cbc2ab",
+    "phage_edges_i99.csv": "985a442843aaf11220edbd3dca6f34517aa13bb5378bde8bdf84af482a2d32a7",
+    "phage_groups_i90.csv": "0df30208f8bf572ba6deaf4e45967a874cb7ee49204d4d5d291453746af89252",
+    "phage_groups_i95.csv": "71267049e38cdd6c686e9e9d0bbfaa1278cb8fdb7c9744d003126a9514d93670",
+    "phage_groups_i99.csv": "09fe22d61b2d71fd141be772a0892927229efb6cbc5147f53b7c7395fbf792e2",
+    "source_review.json": "1551a5ecba6d933d5ae400d81ed17bb9ad910d4ce7f01b0bc9f2150f7f421289"
+  },
+  "limitations": [
+    "Heuristic assembly alignment may miss relatedness; a missing edge is not proof of unrelatedness",
+    "Grouping does not exclude shared individual proteins, RBP domains or distant ancestry",
+    "Thresholds are fixed evaluation choices, not taxonomic or clinical claims",
+    "No infection labels or model metrics select edges, thresholds or seeds"
+  ]
+}
