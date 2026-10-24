@@ -12,6 +12,11 @@ improvement criterion was not met; it does not redefine this first task's endpoi
 
 ## Task and evidence
 
+See [endpoint semantics](endpoint-semantics.md) for the distinction between source
+positivity, clearing, plaques, productive infection and growth suppression. The
+table below describes the frozen exchange task; the trained host study uses its
+separately audited observed-label cohort and has no bundle-serving adapter yet.
+
 Given one bacterial strain's available representation and one existing phage's
 identity or representation, predict the binary label of a named, pinned source
 dataset. Batch calls form a pair matrix. They do not estimate mixed-population
