@@ -76,15 +76,22 @@ def source_endpoint_from_manifest(path: str | Path) -> dict:
         "endpoint_id": f"{manifest['dataset_id']}:source-interaction:v1",
         "kind": "source_defined_binary",
         "definition": labels["operational_definition"],
-        "positive_value": 1, "negative_value": 0,
+        "positive_value": 1,
+        "negative_value": 0,
         "assay_definition_status": (
             "verified" if labels["operational_definition_status"] == "verified" else "unverified"
         ),
-        "source": {"dataset_id": manifest["dataset_id"], "version": manifest["version"],
-                   "sha256": manifest["sha256"], "label_column": labels["source_column"]},
+        "source": {
+            "dataset_id": manifest["dataset_id"],
+            "version": manifest["version"],
+            "sha256": manifest["sha256"],
+            "label_column": labels["source_column"],
+        },
         "evidence": [manifest["source"]["download_url"]],
-        "limitations": [labels["model_target_mapping_note"],
-                        "Missing pairs are unknown, not negative; mixture outcomes are outside this endpoint."],
+        "limitations": [
+            labels["model_target_mapping_note"],
+            "Missing pairs are unknown, not negative; mixture outcomes are outside this endpoint.",
+        ],
     }
 
 
@@ -157,11 +164,7 @@ def verify_registered_dataset(
     manifest_path: str | Path,
     data_path: str | Path | None = None,
 ) -> DatasetVerification:
-    """Verify file checksum and registered summary statistics.
-
-    Missing interaction pairs remain unknown. This function never imputes them
-    as negative labels.
-    """
+    """Verify file checksum and registered summary statistics."""
     manifest_path = Path(manifest_path)
     manifest = load_dataset_manifest(manifest_path)
     if data_path is None:

@@ -2,42 +2,33 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 import hashlib
 import json
 import os
-import tempfile
 from pathlib import Path
+import shutil
+import subprocess
+import tempfile
+
+PACKAGE_DIR = Path(__file__).resolve().parent
 
 
-def read_json_object_with_digest(
-    path: str | Path,
-    *,
-    label: str = "JSON artifact",
-) -> tuple[dict, str]:
-    """Read a JSON object and hash the exact same bytes to avoid read/hash races."""
+def read_json_object(path: str | Path, *, label: str = "JSON artifact") -> dict:
+    """Read a JSON object while rejecting non-standard NaN/Infinity constants."""
     source = Path(path)
 
     def reject_constant(value: str):
         raise ValueError(f"non-standard JSON constant {value!r} is not allowed")
 
     try:
-        raw = source.read_bytes()
-        digest = hashlib.sha256(raw).hexdigest()
-        data = json.loads(
-            raw.decode("utf-8"),
-            parse_constant=reject_constant,
-        )
-    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+        data = json.loads(source.read_text(encoding="utf-8"), parse_constant=reject_constant)
+    except (OSError, UnicodeError, ValueError) as exc:
         raise ValueError(f"cannot read valid JSON for {label} from {source}: {exc}") from exc
     if not isinstance(data, dict):
         raise ValueError(f"{label} at {source} must contain a JSON object.")
-    return data, digest
+    return data
 
-
-def read_json_object(path: str | Path, *, label: str = "JSON artifact") -> dict:
-    """Read a JSON object while rejecting non-standard NaN/Infinity constants."""
-    document, _ = read_json_object_with_digest(path, label=label)
-    return document
 
 def canonical_json(document: dict) -> str:
     """Serialize JSON deterministically using the model/lab exchange convention."""
@@ -70,6 +61,35 @@ def sha256_file(path: str | Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def code_provenance(repo: str | Path, script: str | Path) -> dict:
+    """Record the Git revision and hashes of the entry script and every package module.
+
+    Hashing the whole package avoids hand-maintained file lists that drift from
+    what a run actually imports.
+    """
+    repo = Path(repo).resolve()
+    paths = [Path(script).resolve(), *sorted(PACKAGE_DIR.glob("*.py"))]
+    revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
+    return {
+        "code_base_revision": revision,
+        "code_sha256": {path.relative_to(repo).as_posix(): sha256_file(path) for path in paths},
+    }
+
+
+@contextmanager
+def staged_directory(destination: str | Path):
+    """Yield a sibling temporary directory that becomes ``destination`` on success."""
+    destination = Path(destination)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    stage = Path(tempfile.mkdtemp(prefix=f".{destination.name}.", dir=destination.parent))
+    try:
+        yield stage
+        stage.rename(destination)
+    finally:
+        if stage.exists():
+            shutil.rmtree(stage)
 
 
 def atomic_write_json(document: dict, path: str | Path) -> None:

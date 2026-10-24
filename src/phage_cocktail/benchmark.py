@@ -16,7 +16,7 @@ from sklearn.metrics import (
 from .data import validate_interactions
 
 
-def _metrics(y_true: pd.Series, probability: np.ndarray) -> dict[str, float]:
+def classification_metrics(y_true: pd.Series, probability: np.ndarray) -> dict[str, float]:
     """Return ranking and probability-quality metrics."""
     y = y_true.to_numpy(dtype=int)
     p = np.asarray(probability, dtype=float)
@@ -91,7 +91,7 @@ def evaluate_pairwise_baselines(
     predictions = pairwise_baseline_predictions(train, test, smoothing=smoothing)
     rows = []
     for name, probability in predictions.items():
-        rows.append({"baseline": name, **_metrics(test["infection"], probability)})
+        rows.append({"baseline": name, **classification_metrics(test["infection"], probability)})
 
     return pd.DataFrame(rows).set_index("baseline")
 

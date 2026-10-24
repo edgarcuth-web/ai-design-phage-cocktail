@@ -40,17 +40,22 @@ data/
 models/             # frozen development JSON weights and model card
 notebooks/          # exploration and experiments
 src/phage_cocktail/
-  artifacts.py      # canonical JSON hashes and raw-file digests
-  model_interface.py # exchange validation and CLI
-  input_bundle.py   # frozen input/resource consumer and PairPrediction
-  baseline.py       # simple cocktail probability baseline
-  data.py           # observed interaction-table loading/validation
-  registry.py       # dataset checksum and summary verification
-  split.py          # deterministic strain-level splits
-  benchmark.py      # leakage-guarded pairwise/cocktail baselines
-  cohort.py         # published MLC reconciliation and genomic host grouping
-  host_baseline.py  # train-only preprocessing and known-phage logistic baseline
-  host_study.py     # locked real-data audit/training/evaluation runner
+  artifacts.py        # canonical JSON hashes, file digests, code provenance, staged outputs
+  model_interface.py  # exchange validation and CLI
+  input_bundle.py     # frozen input/resource consumer and PairPrediction
+  baseline.py         # simple cocktail probability baseline
+  analysis.py         # interaction-table summary statistics
+  data.py             # observed interaction-table loading/validation
+  registry.py         # dataset checksum and summary verification
+  split.py            # deterministic strain- and group-level splits
+  benchmark.py        # leakage-guarded pairwise/cocktail baselines
+  cohort.py           # MLC reconciliation, FASTA digests and genomic host grouping
+  host_baseline.py    # train-only preprocessing and known-phage logistic baseline
+  host_study.py       # locked real-data audit/training/evaluation runner
+  pair_cohort.py      # exact-sequence identity audit for paired inputs
+  paired_splits.py    # phage-neighbour grouping and crossed paired partitions
+  paired_baseline.py  # 4-mer features, additive pair models and grouped metrics
+  genophi_reference.py # optional GenoPHI reference workflow helpers
 tests/              # automated tests
 schemas/            # bundle/pair-result and legacy request/result wire schemas
 ```

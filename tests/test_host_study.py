@@ -10,7 +10,7 @@ from phage_cocktail.host_baseline import (
     HostFeatureEncoder, fit_host_model, paired_group_bootstrap, predict_host_model,
 )
 from phage_cocktail.split import split_by_host_group
-from phage_cocktail.host_study import _features, verify_resources
+from phage_cocktail.host_study import host_features, verify_resources
 
 
 def test_missing_source_mlc_is_excluded_and_disagreement_is_rejected():
@@ -117,6 +117,6 @@ def test_resource_lock_rejects_changed_bytes_and_path_escape(tmp_path):
 def test_published_feature_join_cannot_include_outcome_columns():
     metadata = pd.DataFrame({"O-type": ["O1"], "n_infections": [93]}, index=["a-1"])
     defenses = pd.DataFrame({"RM": [2]}, index=["A1"])
-    features, names = _features(["A1"], metadata, defenses, ["O-type"])
+    features, names = host_features(["A1"], metadata, defenses, ["O-type"])
     assert features.to_dict() == {"O-type": {"A1": "O1"}, "defense:RM": {"A1": 2}}
     assert names == ["defense:RM"]

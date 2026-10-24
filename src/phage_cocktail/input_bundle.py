@@ -10,7 +10,11 @@ from pathlib import Path
 import hashlib
 
 from .artifacts import canonical_content_sha256, canonical_json, read_json_object
-from .model_interface import _validate_schema, _verify_content_hash, _parse_timestamp
+from .model_interface import parse_timestamp, validate_schema, verify_content_hash
+
+
+def _canonical_sha256(value) -> str:
+    return hashlib.sha256(canonical_json(value).encode()).hexdigest()
 
 
 def _file(root, relative, expected_hash, expected_size):
@@ -27,19 +31,18 @@ def _file(root, relative, expected_hash, expected_size):
 
 
 def _time(value):
-    return _parse_timestamp(value, "timestamp")
+    return parse_timestamp(value, "timestamp")
 
 
 def validate_input_bundle(bundle):
     """Check the manifest independently of local file availability."""
-    _validate_schema(bundle, "model-input-bundle-v1.schema.json", "ModelInputBundle")
-    _verify_content_hash(bundle, "ModelInputBundle")
+    validate_schema(bundle, "model-input-bundle-v1.schema.json", "ModelInputBundle")
+    verify_content_hash(bundle, "ModelInputBundle")
     if type(bundle["schema_version"]) is not int:
         raise ValueError("schema_version must be an integer")
     host, phage = bundle["host_state"], bundle["phage_profile"]
-    _verify_content_hash(host, "HostState")
-    phage_hash = hashlib.sha256(canonical_json(phage).encode()).hexdigest()
-    if phage_hash != bundle["phage_profile_sha256"]:
+    verify_content_hash(host, "HostState")
+    if _canonical_sha256(phage) != bundle["phage_profile_sha256"]:
         raise ValueError("PhageProfile hash mismatch")
     created = _time(bundle["created_at"])
     if any(_time(t) > created for t in (host["as_of"], host["created_at"], phage["created_at"])):
@@ -78,11 +81,12 @@ def validate_input_bundle(bundle):
     feature_ids = set()
     for entry in bundle["feature_artifacts"]:
         artifact = entry["manifest"]
-        _verify_content_hash(artifact, "FeatureArtifact")
+        verify_content_hash(artifact, "FeatureArtifact")
         analysis = artifact["analysis"]
-        if hashlib.sha256(canonical_json(analysis["parameters"]).encode()).hexdigest() != analysis["parameters_sha256"]:
+        if _canonical_sha256(analysis["parameters"]) != analysis["parameters_sha256"]:
             raise ValueError("FeatureArtifact parameter hash mismatch")
-        if not _time(analysis["started_at"]) <= _time(analysis["finished_at"]) <= _time(artifact["created_at"]) <= created:
+        started, finished = _time(analysis["started_at"]), _time(analysis["finished_at"])
+        if not started <= finished <= _time(artifact["created_at"]) <= created:
             raise ValueError("FeatureArtifact chronology mismatch")
         if artifact["artifact_id"] in feature_ids:
             raise ValueError("duplicate FeatureArtifact ID")
@@ -95,7 +99,10 @@ def validate_input_bundle(bundle):
             matches = subject["id"] == phage["profile_id"]
             expected = (phage["sequence"] or {}).get("sha256")
             if expected is None:
-                expected = next((r["sequence_sha256"] for r in bundle["resources"] if r["subject"] == "phage"), None)
+                expected = next(
+                    (r["sequence_sha256"] for r in bundle["resources"] if r["subject"] == "phage"),
+                    None,
+                )
         if not matches or subject["sequence_sha256"] != expected:
             raise ValueError("FeatureArtifact subject does not match exact pair")
         for output in artifact["outputs"]:
@@ -119,12 +126,13 @@ def load_input_bundle(path, *, required_sequences=()):
         _file(path.parent, resource["path"], resource["sha256"], resource["size_bytes"])
     for entry in bundle["feature_artifacts"]:
         for output in entry["manifest"]["outputs"]:
-            _file(path.parent, f"{entry['directory']}/{output['path']}", output["sha256"], output["size_bytes"])
+            relative = f"{entry['directory']}/{output['path']}"
+            _file(path.parent, relative, output["sha256"], output["size_bytes"])
     return bundle
 
 
 def read_sequence_bytes(bundle_path, subject):
-    """Return verified bytes for preprocessing; this is not biological annotation."""
+    """Return the verified sequence file bytes for one subject."""
     bundle = load_input_bundle(bundle_path, required_sequences=(subject,))
     resource = next(r for r in bundle["resources"] if r["subject"] == subject)
     return _file(Path(bundle_path).parent, resource["path"], resource["sha256"], resource["size_bytes"])
@@ -132,11 +140,12 @@ def read_sequence_bytes(bundle_path, subject):
 
 def validate_pair_prediction(result, bundle):
     validate_input_bundle(bundle)
-    _validate_schema(result, "pair-prediction-v1.schema.json", "PairPrediction")
-    _verify_content_hash(result, "PairPrediction")
+    validate_schema(result, "pair-prediction-v1.schema.json", "PairPrediction")
+    verify_content_hash(result, "PairPrediction")
     if type(result["schema_version"]) is not int:
         raise ValueError("schema_version must be an integer")
-    if (result["bundle_id"], result["bundle_sha256"]) != (bundle["bundle_id"], bundle["content_sha256"]):
+    bound = (result["bundle_id"], result["bundle_sha256"])
+    if bound != (bundle["bundle_id"], bundle["content_sha256"]):
         raise ValueError("prediction does not bind the exact bundle")
     if _time(result["created_at"]) < _time(bundle["created_at"]):
         raise ValueError("prediction cannot predate bundle")
@@ -145,7 +154,11 @@ def validate_pair_prediction(result, bundle):
         if estimate["value"] is not None or estimate["uncertainty"] is not None:
             raise ValueError("not_estimated must have null values and uncertainty")
     else:
-        if estimate["value"] is None or not producer["artifact_sha256"] or not producer["preprocessing_sha256"]:
+        if (
+            estimate["value"] is None
+            or not producer["artifact_sha256"]
+            or not producer["preprocessing_sha256"]
+        ):
             raise ValueError("estimated output requires value, model and preprocessing digests")
         interval = estimate["uncertainty"]
         if interval and not interval["lower"] <= estimate["value"] <= interval["upper"]:
@@ -153,11 +166,15 @@ def validate_pair_prediction(result, bundle):
         if estimate["status"] == "probability" and (
                 not interval or not producer["calibration_sha256"]
                 or bundle["endpoint"]["assay_definition_status"] != "verified"):
-            raise ValueError("probability requires verified assay definition, calibration digest and uncertainty")
+            raise ValueError(
+                "probability requires verified assay definition, calibration digest and uncertainty"
+            )
     return result
 
 
-def build_pair_prediction(bundle, *, prediction_id, estimate=None, producer=None, created_at=None, limitations=None):
+def build_pair_prediction(
+    bundle, *, prediction_id, estimate=None, producer=None, created_at=None, limitations=None
+):
     """Record explicit model output, or abstain when no inference is supplied."""
     result = {
         "schema_version": 1, "kind": "pair_prediction", "prediction_id": prediction_id,

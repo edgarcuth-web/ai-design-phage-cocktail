@@ -1,7 +1,6 @@
 """Audit paired input identities without fitting models or inferring labels."""
 from __future__ import annotations
 
-import pandas as pd
 
 from .data import validate_interactions
 

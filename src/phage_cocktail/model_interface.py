@@ -10,17 +10,12 @@ import argparse
 from collections.abc import Mapping
 from datetime import datetime, timezone
 from functools import lru_cache
-import json
 from pathlib import Path
 import sys
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-from .artifacts import (
-    atomic_write_json as _atomic_write_json,
-    canonical_content_sha256 as _content_hash,
-    read_json_object as _read_json,
-)
+from .artifacts import atomic_write_json, canonical_content_sha256, read_json_object
 
 SCHEMA_VERSION = 1
 PREDICTION_TARGETS = (
@@ -29,6 +24,11 @@ PREDICTION_TARGETS = (
     "resistance_emergence",
 )
 SCHEMA_DIR = Path(__file__).resolve().parent / "schemas"
+BUNDLE_COMMANDS = {
+    "validate-bundle",
+    "validate-pair-prediction",
+    "create-unresolved-pair-prediction",
+}
 UNKNOWN_ESTIMATE = {
     "status": "not_estimated",
     "probability": None,
@@ -38,7 +38,7 @@ UNKNOWN_ESTIMATE = {
 }
 
 
-def _parse_timestamp(value: str, field_name: str) -> datetime:
+def parse_timestamp(value: str, field_name: str) -> datetime:
     if not isinstance(value, str):
         raise ValueError(f"{field_name} must be an ISO-8601 timestamp.")
     try:
@@ -59,21 +59,21 @@ def _validator(schema_name: str) -> Draft202012Validator:
         "pair-prediction-v1.schema.json",
     }:
         raise ValueError(f"unsupported schema name: {schema_name}")
-    schema = _read_json(SCHEMA_DIR / schema_name)
+    schema = read_json_object(SCHEMA_DIR / schema_name)
     Draft202012Validator.check_schema(schema)
     return Draft202012Validator(schema, format_checker=FormatChecker())
 
 
-def _verify_content_hash(document: dict, kind: str) -> None:
+def verify_content_hash(document: dict, kind: str) -> None:
     supplied = document.get("content_sha256")
-    expected = _content_hash(document)
+    expected = canonical_content_sha256(document)
     if supplied != expected:
         raise ValueError(
             f"{kind} content_sha256 mismatch: expected {expected}, got {supplied!r}."
         )
 
 
-def _validate_schema(document: dict, schema_name: str, kind: str) -> None:
+def validate_schema(document: dict, schema_name: str, kind: str) -> None:
     if not isinstance(document, dict):
         raise ValueError(f"{kind} must be a JSON object.")
     errors = sorted(
@@ -91,11 +91,11 @@ def _validate_schema(document: dict, schema_name: str, kind: str) -> None:
 
 def validate_model_request(request: dict) -> dict:
     """Validate ModelRequest schema, content hash, derived ID and timestamp order."""
-    _validate_schema(request, "model-request-v1.schema.json", "ModelRequest")
-    _verify_content_hash(request, "ModelRequest")
+    validate_schema(request, "model-request-v1.schema.json", "ModelRequest")
+    verify_content_hash(request, "ModelRequest")
     if request["record_id"] != request["request_id"]:
         raise ValueError("ModelRequest record_id must equal request_id.")
-    if _parse_timestamp(request["created_at"], "created_at") < _parse_timestamp(
+    if parse_timestamp(request["created_at"], "created_at") < parse_timestamp(
         request["host_state"]["as_of"], "host_state.as_of"
     ):
         raise ValueError("ModelRequest created_at cannot predate HostState as_of.")
@@ -104,18 +104,18 @@ def validate_model_request(request: dict) -> dict:
 
 def load_model_request(path: str | Path) -> dict:
     """Read and fully validate a ModelRequest JSON file."""
-    return validate_model_request(_read_json(path))
+    return validate_model_request(read_json_object(path))
 
 
 def validate_model_result(result: dict, request: dict | None = None) -> dict:
     """Validate ModelResult schema/hash and, optionally, exact request lineage."""
-    _validate_schema(result, "model-result-v1.schema.json", "ModelResult")
-    _verify_content_hash(result, "ModelResult")
+    validate_schema(result, "model-result-v1.schema.json", "ModelResult")
+    verify_content_hash(result, "ModelResult")
     if result["record_id"] != result["result_id"]:
         raise ValueError("ModelResult record_id must equal result_id.")
 
-    predicted_at = _parse_timestamp(result["predicted_at"], "predicted_at")
-    host_as_of = _parse_timestamp(result["host_state"]["as_of"], "host_state.as_of")
+    predicted_at = parse_timestamp(result["predicted_at"], "predicted_at")
+    host_as_of = parse_timestamp(result["host_state"]["as_of"], "host_state.as_of")
     if predicted_at < host_as_of:
         raise ValueError("ModelResult predicted_at cannot predate HostState as_of.")
 
@@ -147,7 +147,7 @@ def validate_model_result(result: dict, request: dict | None = None) -> dict:
             raise ValueError("ModelResult PhageProfile ID does not match ModelRequest.")
         if result["phage_profile_sha256"] != request["phage_profile_sha256"]:
             raise ValueError("ModelResult PhageProfile fingerprint does not match ModelRequest.")
-        if predicted_at < _parse_timestamp(request["created_at"], "request.created_at"):
+        if predicted_at < parse_timestamp(request["created_at"], "request.created_at"):
             raise ValueError("ModelResult predicted_at cannot predate ModelRequest creation.")
         requested = set(request["requested_targets"])
         for target in PREDICTION_TARGETS:
@@ -161,7 +161,7 @@ def validate_model_result(result: dict, request: dict | None = None) -> dict:
 
 def load_model_result(path: str | Path, request: dict | None = None) -> dict:
     """Read and validate a ModelResult JSON file, optionally against its request."""
-    return validate_model_result(_read_json(path), request=request)
+    return validate_model_result(read_json_object(path), request=request)
 
 
 def build_model_result(
@@ -177,7 +177,6 @@ def build_model_result(
     """Build a content-addressed result from explicit model outputs.
 
     Missing target entries become not_estimated; unknown target names are rejected.
-    This function never converts missing observations into negative labels.
     """
     request = validate_model_request(request)
     if not isinstance(probabilities, Mapping):
@@ -214,7 +213,7 @@ def build_model_result(
         "producer": dict(producer),
         "predicted_at": predicted_at,
     }
-    result["content_sha256"] = _content_hash(result)
+    result["content_sha256"] = canonical_content_sha256(result)
     return validate_model_result(result, request=request)
 
 
@@ -251,7 +250,6 @@ def create_unresolved_result(
     )
 
 
-
 def write_model_result(
     result: dict,
     path: str | Path,
@@ -259,25 +257,33 @@ def write_model_result(
 ) -> None:
     """Validate before atomically writing a ModelResult JSON file."""
     validate_model_result(result, request=request)
-    _atomic_write_json(result, path)
+    atomic_write_json(result, path)
 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="phage-model-interface",
-        description="Validate the versioned model exchange and emit explicit unresolved results; no biological annotation is run here.",
+        description="Validate the versioned model exchange and emit explicit unresolved results.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
 
-    bundle = commands.add_parser("validate-bundle", help="verify frozen snapshots and every local payload")
+    bundle = commands.add_parser(
+        "validate-bundle", help="verify frozen snapshots and every local payload"
+    )
     bundle.add_argument("bundle", type=Path)
-    bundle.add_argument("--require-sequence", choices=("host", "phage"), action="append", default=[])
+    bundle.add_argument(
+        "--require-sequence", choices=("host", "phage"), action="append", default=[]
+    )
 
-    pair = commands.add_parser("validate-pair-prediction", help="check an exact source-endpoint result")
+    pair = commands.add_parser(
+        "validate-pair-prediction", help="check an exact source-endpoint result"
+    )
     pair.add_argument("result", type=Path)
     pair.add_argument("--bundle", type=Path, required=True)
 
-    abstain = commands.add_parser("create-unresolved-pair-prediction", help="record no inference against a frozen bundle")
+    abstain = commands.add_parser(
+        "create-unresolved-pair-prediction", help="record no inference against a frozen bundle"
+    )
     abstain.add_argument("bundle", type=Path)
     abstain.add_argument("output", type=Path)
     abstain.add_argument("--prediction-id", required=True)
@@ -311,14 +317,17 @@ def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
     try:
-        if args.command in {"validate-bundle", "validate-pair-prediction", "create-unresolved-pair-prediction"}:
-            from .input_bundle import load_input_bundle, validate_pair_prediction, build_pair_prediction
+        if args.command in BUNDLE_COMMANDS:
+            # Imported lazily: input_bundle imports this module.
+            from .input_bundle import build_pair_prediction, load_input_bundle, validate_pair_prediction
 
-            bundle = load_input_bundle(args.bundle, required_sequences=getattr(args, "require_sequence", ()))
+            bundle = load_input_bundle(
+                args.bundle, required_sequences=getattr(args, "require_sequence", ())
+            )
             if args.command == "validate-bundle":
                 print(f"valid ModelInputBundle: {bundle['bundle_id']} sha256={bundle['content_sha256']}")
             elif args.command == "validate-pair-prediction":
-                result = validate_pair_prediction(_read_json(args.result), bundle)
+                result = validate_pair_prediction(read_json_object(args.result), bundle)
                 print(f"valid PairPrediction: {result['prediction_id']}; {result['estimate']['status']}")
             else:
                 if args.output.exists() or args.output.is_symlink():
@@ -326,7 +335,7 @@ def main(argv: list[str] | None = None) -> int:
                 if args.output.resolve().is_relative_to(args.bundle.resolve().parent):
                     raise ValueError("write prediction outside the frozen bundle directory")
                 result = build_pair_prediction(bundle, prediction_id=args.prediction_id)
-                _atomic_write_json(result, args.output)
+                atomic_write_json(result, args.output)
                 print(f"wrote unresolved PairPrediction: {args.output}; no inference was run")
             return 0
 
@@ -364,7 +373,6 @@ def main(argv: list[str] | None = None) -> int:
     except (ValueError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
-    return 2
 
 
 if __name__ == "__main__":
