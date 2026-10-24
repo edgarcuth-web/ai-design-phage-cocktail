@@ -20,6 +20,14 @@ the prespecified sensitivities. Both remain uncalibrated research scores; see th
 [paired study](docs/paired-baseline-results.md).
 Pairwise matrices and offline union coverage do not establish cocktail efficacy.
 
+| Capability | Current status |
+| --- | --- |
+| File exchange | Bundle/resource validation, result validation and explicit abstention |
+| Trained host baseline | Host features plus known phage identity; uncalibrated source-MLC scores; no demonstrated improvement |
+| Baseline serving through PairPrediction | Not implemented; weights and the generic exchange are separate paths |
+| Mechanistic predictions / unseen phages | Not established by the current baseline |
+| Pair representations and pretrained genomic models | Future benchmark candidates; no backbone selected |
+
 ## Repository layout
 
 ```text
@@ -58,6 +66,9 @@ row-level audit found **41 zeros whose primary MLC readings are missing**. The
 new study excludes these, retaining 16,597 observed labels that exactly match
 `MLC > 0`. The target combines source spotting-assay categories; a mapping to
 adsorption, productive infection or resistance emergence remains unverified.
+Spotting/clearing, plaque formation, productive infection and growth suppression
+are not interchangeable labels; [endpoint semantics](docs/endpoint-semantics.md)
+defines their review boundaries without changing the frozen source endpoint.
 See [the audit](docs/host-baseline-results.md),
 [`docs/dataset_contract.md`](docs/dataset_contract.md) and
 [`data/README.md`](data/README.md).
@@ -191,6 +202,7 @@ GenoPHI is pinned to version 1.0.3 and its demo data to commit
 - [ ] Demonstrate improvement and validate calibration before model promotion
 - [x] Evaluate unseen-phage regimes with frozen sequence groups and report inconclusive additive-baseline gains
 - [ ] Add repeated group evaluation and an independent release holdout
+- [ ] Compare explicit host–phage pair features with available pretrained representations under the same protocol
 
 ## Scope
 
