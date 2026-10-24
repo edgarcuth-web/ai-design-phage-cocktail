@@ -139,7 +139,9 @@ def predict_host_model(model, pairs, features):
         else:
             row_features = matrix[indices[row.bacterium]]
             z = float(row_features @ estimator["coefficients"] + estimator["intercept"])
-            # Stable sigmoid, including extreme inputs outside the training range.
+            # Stable sigmoid, including extreme inputs outside the training range. Kept apart
+            # from paired_baseline's expit: they differ in the last bit, and these scores
+            # reproduce the frozen host study and the paired study's legacy comparator.
             scores.append(1 / (1 + np.exp(-z)) if z >= 0 else np.exp(z) / (1 + np.exp(z)))
     return np.asarray(scores, dtype=float)
 
@@ -147,7 +149,11 @@ def predict_host_model(model, pairs, features):
 def paired_group_bootstrap(
     pairs, host_scores, baseline_scores, *, resamples, seed, confidence=0.95
 ):
-    """Paired percentile interval for AP gain, resampling complete host groups."""
+    """Paired percentile interval for AP gain, resampling complete host groups.
+
+    Equivalent to paired_baseline.grouped_ap_contrast on one axis, but the two differ
+    in the last bit; this one reproduces the frozen host study.
+    """
     y = pairs.infection.to_numpy(dtype=int)
     a, b = np.asarray(host_scores), np.asarray(baseline_scores)
     if len(y) != len(a) or a.shape != b.shape or len(np.unique(y)) != 2:

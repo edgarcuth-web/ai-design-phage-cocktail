@@ -107,6 +107,7 @@ def predict_logistic(model, x):
     logits = np.zeros(len(x), dtype=float)
     for column, coefficient in enumerate(coefficients):
         logits += x[:, column] * coefficient
+    # Not shared with host_baseline's sigmoid: frozen paired results depend on expit's rounding.
     return expit(logits + model["intercept"])
 
 
@@ -187,7 +188,10 @@ REGIME_AXES = {
 def grouped_ap_contrast(
     rows, scores, comparator, weights, regime, *, resamples, seed, minimum_groups=5
 ):
-    """Resample whole groups, multiplying multiplicities for crossed axes."""
+    """Resample whole groups, multiplying multiplicities for crossed axes.
+
+    Not shared with host_baseline.paired_group_bootstrap; see the note there.
+    """
     axes = REGIME_AXES[regime]
     y, weights = rows.infection.to_numpy(), np.asarray(weights)
     evaluate, baseline = _ap_function(y, scores), _ap_function(y, comparator)
