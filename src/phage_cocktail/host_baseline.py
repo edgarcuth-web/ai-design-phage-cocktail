@@ -63,9 +63,13 @@ class HostFeatureEncoder:
                 "means": self.means, "scales": self.scales, "categories": self.categories}
 
 
-def fit_host_model(train, features, numeric_columns, categorical_columns, *, C, max_iter):
+def fit_host_model(train, features, numeric_columns, categorical_columns, *, C, max_iter, sample_weight=None):
     """Fit one fixed logistic model per training phage, using no held-out hosts."""
     validate_interactions(train)
+    train = train.reset_index(drop=True)
+    weights = np.ones(len(train)) if sample_weight is None else np.asarray(sample_weight, dtype=float)
+    if weights.shape != (len(train),) or not np.isfinite(weights).all() or (weights <= 0).any():
+        raise ValueError("sample weights must be aligned, finite and positive")
     train_hosts = sorted(train.bacterium.unique())
     if not train_hosts or set(train_hosts) - set(features.index):
         raise ValueError("missing training host features")
@@ -75,15 +79,16 @@ def fit_host_model(train, features, numeric_columns, categorical_columns, *, C, 
     models = {}
     for phage, observations in train.groupby("phage", sort=True):
         y = observations.infection.to_numpy(dtype=int)
+        local_weights = weights[observations.index]
         if len(np.unique(y)) < 2:
-            models[phage] = {"kind": "single_class_prevalence", "score": float((y.sum() + 1) / (len(y) + 2)),
+            models[phage] = {"kind": "single_class_prevalence", "score": float((local_weights @ y + 1) / (local_weights.sum() + 2)),
                              "training_rows": len(y)}
             continue
         x = host_matrix[[row_index[host] for host in observations.bacterium]]
         classifier = LogisticRegression(C=C, solver="lbfgs", max_iter=max_iter)
         with warnings.catch_warnings():
             warnings.simplefilter("error", ConvergenceWarning)
-            classifier.fit(x, y)
+            classifier.fit(x, y, sample_weight=None if sample_weight is None else local_weights)
         models[phage] = {"kind": "logistic", "coefficients": classifier.coef_[0].tolist(),
                          "intercept": float(classifier.intercept_[0]), "training_rows": len(y),
                          "iterations": int(classifier.n_iter_[0])}

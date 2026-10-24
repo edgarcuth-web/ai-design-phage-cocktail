@@ -6,6 +6,10 @@ see [its audit and results](host-baseline-results.md). Calibrated inference has 
 been demonstrated. Project name: **Phage–Host Interaction Predictor**. The existing
 Python package name remains `phage_cocktail` so current scripts keep working.
 
+The later [paired baseline study](paired-baseline-results.md) adds explicit phage
+4-mer representations and frozen cold-phage/double-cold evaluation. Its primary
+improvement criterion was not met; it does not redefine this first task's endpoint.
+
 ## Task and evidence
 
 See [endpoint semantics](endpoint-semantics.md) for the distinction between source

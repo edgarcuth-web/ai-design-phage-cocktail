@@ -57,6 +57,13 @@ observed rows with 12,784 explicit negatives.
 License status has not yet been independently verified. Do not redistribute the
 downloaded data until the upstream data terms have been checked.
 
+The later [paired-study review](studies/paired_data_reuse_review.v1.json) separately
+records the primary Zenodo/Figshare CC BY 4.0 declarations and verifies archive
+byte correspondence for 94 phage genomes and four analysis tables, plus selected
+host-file metadata. This does not change the frozen GenoPHI registry's status or
+treat a software license as a separate dataset license. Paired-study targets are
+reconciled primary MLC observations.
+
 Publication:
 
 Noonan AJC et al. "Phylogeny-agnostic strain-level prediction of phage-host

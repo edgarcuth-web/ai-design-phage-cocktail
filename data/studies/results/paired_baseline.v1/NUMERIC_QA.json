@@ -1,0 +1,7 @@
+{
+  "status": "diagnostic_numeric_tie_failure_not_validated_results",
+  "protocol": "data/studies/paired_baseline.v1.json",
+  "reason": "Batch BLAS accumulation split mathematically identical feature scores at ~1e-16 and altered ranking ties. Correct scoring accumulation, with no changes to rows, representations, parameter grid, weights or selection criterion.",
+  "disposition": "Preserved for traceability; superseded by paired_baseline.v2. Do not select or promote this checkpoint based on these metrics.",
+  "correction": "Regression test reproduced the batch-shape failure; fixed accumulation must pass before rerunning all 18 unchanged planned configurations."
+}

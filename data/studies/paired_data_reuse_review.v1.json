@@ -1,0 +1,38 @@
+{
+  "review_date": "2026-10-24",
+  "primary_source": {
+    "doi": "10.5281/zenodo.13831957",
+    "metadata_url": "https://zenodo.org/api/records/13831957",
+    "declared_license": "cc-by-4.0",
+    "metadata_sha256": "d73bed86e64f274da9973d0410d9476933086ffaa75a41cbf3ab600460575f27",
+    "archive_size_bytes": 146786594,
+    "archive_md5": "380d288b8cd7629660603447b9856fc9",
+    "archive_sha256": "653707c41e41a32e9e2d01a59cfbb525c1b1573aa628aad40f9430f2ddb5db1c",
+    "matching_locked_files": 98,
+    "different_files": 0,
+    "missing_files": 0,
+    "verified_scope": "94 phage genomes, source MLC, host defenses, host metadata and core distances match the original deposited archive bytes. This new verification does not rewrite the historical unverified-archive record."
+  },
+  "host_genomes": {
+    "doi": "10.6084/m9.figshare.25941691.v1",
+    "metadata_url": "https://api.figshare.com/v2/articles/25941691/versions/1",
+    "declared_license": {
+      "value": 1,
+      "name": "CC BY 4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "selected_host_file_id_size_md5_matches": 177,
+    "metadata_sha256": "36075755866c80309437013c6886160c1db250792c2a354f4707541f3c82a892"
+  },
+  "genophi_subset": {
+    "role": "Frozen cohort membership and agreement audit, not a substitution for primary MLC observations",
+    "separate_dataset_terms": "not independently established by a software MIT statement",
+    "target_labels": "The fitted targets are the reconciled primary-source observed MLC values, with missing observations excluded."
+  },
+  "attribution": [
+    "Gaborieau, Vaysset, Tesson et al.; Nature Microbiology, DOI 10.1038/s41564-024-01832-5; Zenodo 10.5281/zenodo.13831957",
+    "Genome assembly of the Escherichia Picard collection; Figshare 10.6084/m9.figshare.25941691.v1",
+    "Noonan et al., GenoPHI; pinned subset revision f7e30abc1b0bbba1ae76b8f58a3363bbbc5cd54f"
+  ],
+  "scope": "Records publisher declarations and byte correspondence for this computational study. Raw source data are not redistributed in the model result delivery; this does not assert blanket clearance of unrelated source-specific reuse terms."
+}
