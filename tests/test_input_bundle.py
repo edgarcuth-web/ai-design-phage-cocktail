@@ -11,7 +11,6 @@ import shutil
 
 from phage_cocktail.artifacts import canonical_content_sha256
 from phage_cocktail.input_bundle import load_input_bundle, build_pair_prediction, validate_pair_prediction
-from phage_cocktail.model_interface import validate_model_result
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "tests/fixtures/input_bundle/bundle.json"
@@ -47,11 +46,6 @@ class InputBundleTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "probability requires"):
             validate_pair_prediction(result, bundle)
 
-    def test_packaged_schemas_match_repository_copies(self):
-        for name in ("model-input-bundle-v1.schema.json", "pair-prediction-v1.schema.json"):
-            self.assertEqual((ROOT / "schemas" / name).read_bytes(),
-                             (ROOT / "src/phage_cocktail/schemas" / name).read_bytes())
-
     def test_source_probability_requires_each_gate_and_stays_source_defined(self):
         bundle = load_input_bundle(FIXTURE)
         bundle["endpoint"]["assay_definition_status"] = "verified"  # Software fixture only.
@@ -64,8 +58,6 @@ class InputBundleTests(unittest.TestCase):
             bundle, prediction_id="source-probability", estimate=estimate, producer=producer,
             created_at="2026-10-19T12:00:00Z",
         )
-        with self.assertRaisesRegex(ValueError, "ModelResult"):
-            validate_model_result(result)
         for missing in ("verified_assay", "uncertainty", "calibration"):
             with self.subTest(missing=missing):
                 altered_bundle, altered_result = copy.deepcopy(bundle), copy.deepcopy(result)
@@ -102,6 +94,30 @@ class InputBundleTests(unittest.TestCase):
                                  "validate-bundle", str(FIXTURE), "--require-sequence", "host"],
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_cli_round_trip_writes_and_validates_an_unresolved_prediction(self):
+        cli = [sys.executable, "-m", "phage_cocktail.model_interface"]
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "prediction.json"
+            create = subprocess.run(
+                [*cli, "create-unresolved-pair-prediction", str(FIXTURE), str(output),
+                 "--prediction-id", "cli-check"],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(create.returncode, 0, create.stderr)
+            check = subprocess.run(
+                [*cli, "validate-pair-prediction", str(output), "--bundle", str(FIXTURE)],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(check.returncode, 0, check.stderr)
+            self.assertIn("not_estimated", check.stdout)
+            again = subprocess.run(
+                [*cli, "create-unresolved-pair-prediction", str(FIXTURE), str(output),
+                 "--prediction-id", "cli-check"],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(again.returncode, 2)
+            self.assertIn("refusing to overwrite", again.stderr)
 
     def test_changed_payload_and_resealed_identity_are_rejected(self):
         for mutate, message in (

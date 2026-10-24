@@ -1,4 +1,4 @@
-"""Leakage-safe train/validation/test splitting by bacterial strain."""
+"""Leakage-safe train/validation/test splitting by whole groups."""
 
 from __future__ import annotations
 
@@ -53,27 +53,6 @@ def assign_partitions(groups, *, seed: int, fractions=(0.70, 0.15, 0.15)) -> dic
         name: "train" if i < n_train else "validation" if i < n_train + n_validation else "test"
         for i, name in enumerate(ordered)
     }
-
-
-def split_by_bacterium(
-    frame: pd.DataFrame,
-    *,
-    train_fraction: float = 0.70,
-    validation_fraction: float = 0.15,
-    test_fraction: float = 0.15,
-    seed: int = 42,
-) -> pd.DataFrame:
-    """Assign every bacterial strain wholly to train, validation, or test."""
-    validate_interactions(frame)
-    result = frame.copy()
-    result["bacterium"] = result["bacterium"].astype(str)
-    assignment = assign_partitions(
-        result["bacterium"],
-        seed=seed,
-        fractions=(train_fraction, validation_fraction, test_fraction),
-    )
-    result["split"] = result["bacterium"].map(assignment)
-    return result
 
 
 def split_by_host_group(

@@ -5,7 +5,11 @@ calibration, model artifacts and inference. SDL owns scientific characterization
 source resolution, experimental state and decisions.
 
 Neither side imports the other's private implementation. The exchange is
-versioned files with mirrored JSON Schemas and shared software fixtures.
+versioned files with mirrored JSON Schemas and shared software fixtures. The
+schemas live in `src/phage_cocktail/schemas/` and are installed with the package;
+the shared fixture is `tests/fixtures/input_bundle/`. Embedded FeatureArtifact
+definitions mirror SDL's owned v1 schema; no analyzer code moves into this
+repository.
 
 See [endpoint semantics](endpoint-semantics.md) for readout distinctions, the
 historical versus audited MLC labels, and review requirements before mapping a
@@ -93,15 +97,14 @@ Cross-check both repositories from SDL:
 python tests/integration/check_model_bundle.py --model-repo ../phage-host-interaction-predictor
 ```
 
-## Legacy mechanistic interface
+## Mechanistic targets
 
-ModelRequest v1 / ModelResult v1 and their existing fixtures remain supported.
-They request adsorption, productive infection and resistance emergence and bind
-identities, rather than carrying usable input data. Existing admission into
-InteractionPrediction and CandidateSet is unchanged.
+The earlier ModelRequest v1 / ModelResult v1 interface (adsorption, productive
+infection and resistance emergence, bound by identity only) has been removed from
+this repository; it carried no usable input data.
 
-**A source-interaction PairPrediction is not automatically converted to a legacy
-mechanistic target or admitted to the productive-infection CandidateSet policy.**
+**A source-interaction PairPrediction is not automatically converted to a
+mechanistic target or admitted to SDL's productive-infection CandidateSet policy.**
 That needs a reviewed endpoint mapping and an endpoint-specific policy. The first
 label remains unverified, so this revision deliberately provides no such mapping.
 Do not copy a source score into a mechanistic probability slot.

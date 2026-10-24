@@ -6,11 +6,60 @@ frozen inputs; they never fetch or annotate missing inputs implicitly.
 """
 
 from datetime import datetime, timezone
-from pathlib import Path
+from functools import lru_cache
 import hashlib
+from pathlib import Path
+
+from jsonschema import Draft202012Validator, FormatChecker
 
 from .artifacts import canonical_content_sha256, canonical_json, read_json_object
-from .model_interface import parse_timestamp, validate_schema, verify_content_hash
+
+SCHEMA_DIR = Path(__file__).resolve().parent / "schemas"
+SCHEMAS = {"model-input-bundle-v1.schema.json", "pair-prediction-v1.schema.json"}
+
+
+def _time(value, field_name="timestamp"):
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name} must be an ISO-8601 timestamp.")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        raise ValueError(f"{field_name} must be an ISO-8601 timestamp.") from None
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError(f"{field_name} must include a timezone.")
+    return parsed
+
+
+@lru_cache(maxsize=len(SCHEMAS))
+def _validator(schema_name: str) -> Draft202012Validator:
+    if schema_name not in SCHEMAS:
+        raise ValueError(f"unsupported schema name: {schema_name}")
+    schema = read_json_object(SCHEMA_DIR / schema_name)
+    Draft202012Validator.check_schema(schema)
+    return Draft202012Validator(schema, format_checker=FormatChecker())
+
+
+def _validate_schema(document, schema_name: str, kind: str) -> None:
+    if not isinstance(document, dict):
+        raise ValueError(f"{kind} must be a JSON object.")
+    errors = sorted(
+        _validator(schema_name).iter_errors(document),
+        key=lambda error: tuple(str(part) for part in error.absolute_path),
+    )
+    if errors:
+        summaries = []
+        for error in errors[:5]:
+            location = ".".join(str(part) for part in error.absolute_path) or "$"
+            summaries.append(f"{location}: {error.message}")
+        extra = f" (and {len(errors) - 5} more)" if len(errors) > 5 else ""
+        raise ValueError(f"invalid {kind}: " + "; ".join(summaries) + extra)
+
+
+def _verify_content_hash(document: dict, kind: str) -> None:
+    supplied = document.get("content_sha256")
+    expected = canonical_content_sha256(document)
+    if supplied != expected:
+        raise ValueError(f"{kind} content_sha256 mismatch: expected {expected}, got {supplied!r}.")
 
 
 def _canonical_sha256(value) -> str:
@@ -30,18 +79,14 @@ def _file(root, relative, expected_hash, expected_size):
     return raw
 
 
-def _time(value):
-    return parse_timestamp(value, "timestamp")
-
-
 def validate_input_bundle(bundle):
     """Check the manifest independently of local file availability."""
-    validate_schema(bundle, "model-input-bundle-v1.schema.json", "ModelInputBundle")
-    verify_content_hash(bundle, "ModelInputBundle")
+    _validate_schema(bundle, "model-input-bundle-v1.schema.json", "ModelInputBundle")
+    _verify_content_hash(bundle, "ModelInputBundle")
     if type(bundle["schema_version"]) is not int:
         raise ValueError("schema_version must be an integer")
     host, phage = bundle["host_state"], bundle["phage_profile"]
-    verify_content_hash(host, "HostState")
+    _verify_content_hash(host, "HostState")
     if _canonical_sha256(phage) != bundle["phage_profile_sha256"]:
         raise ValueError("PhageProfile hash mismatch")
     created = _time(bundle["created_at"])
@@ -81,7 +126,7 @@ def validate_input_bundle(bundle):
     feature_ids = set()
     for entry in bundle["feature_artifacts"]:
         artifact = entry["manifest"]
-        verify_content_hash(artifact, "FeatureArtifact")
+        _verify_content_hash(artifact, "FeatureArtifact")
         analysis = artifact["analysis"]
         if _canonical_sha256(analysis["parameters"]) != analysis["parameters_sha256"]:
             raise ValueError("FeatureArtifact parameter hash mismatch")
@@ -140,8 +185,8 @@ def read_sequence_bytes(bundle_path, subject):
 
 def validate_pair_prediction(result, bundle):
     validate_input_bundle(bundle)
-    validate_schema(result, "pair-prediction-v1.schema.json", "PairPrediction")
-    verify_content_hash(result, "PairPrediction")
+    _validate_schema(result, "pair-prediction-v1.schema.json", "PairPrediction")
+    _verify_content_hash(result, "PairPrediction")
     if type(result["schema_version"]) is not int:
         raise ValueError("schema_version must be an integer")
     bound = (result["bundle_id"], result["bundle_sha256"])

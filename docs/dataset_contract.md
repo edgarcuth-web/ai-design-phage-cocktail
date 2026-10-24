@@ -40,29 +40,19 @@ entry alone does not prove a primary reading existed: the row-level audit found
 curated observed rows; the historical registry preserves the original bytes.
 See [the audit and results](host-baseline-results.md).
 
-Pairwise metrics are computed only on explicitly observed test rows. Whole-cohort
-cocktail coverage requires a complete observed test matrix for every selected
-phage and every held-out strain; otherwise the coverage calculation fails closed
-instead of shrinking the denominator silently.
+Pairwise metrics are computed only on explicitly observed test rows.
 
 ## Evaluation split
 
-The historical split is 70%/15%/15% by bacterial strain, deterministically assigned
-with seed 42. A strain belongs to exactly one of train, validation, or test.
-Benchmark functions independently reject train/test strain overlap.
-
-This split tests prediction on **unseen bacterial strains with phage identities
-that may be known during training**. It does not test cold-start generalization to
-unseen phages, nor does it establish clinical performance. Later evaluations
-should add group-aware repeated splits, uncertainty intervals, and a separate
-unseen-phage protocol where scientifically appropriate.
+The host-feature study assigns whole genomic host groups, defined by published
+core distances and canonical assembly content, 70%/15%/15% by group with seed 42.
+Its protocol and exact split IDs are frozen under `data/studies/`; group fractions
+need not equal host fractions. All baselines are recomputed on those same observed
+evaluation rows. Phage identities may be known during training, so this split
+does not test unseen phages; the [paired split freeze](paired-split-freeze.md)
+adds frozen cold-phage and double-cold regimes.
 
 ## Reproducibility
-
-The host-feature study instead assigns whole genomic host groups, defined by
-published core distances and canonical assembly content. Its protocol and exact
-split IDs are frozen under `data/studies/`; group fractions need not equal host
-fractions. All baselines are recomputed on those same observed evaluation rows.
 
 Before training or evaluation:
 
