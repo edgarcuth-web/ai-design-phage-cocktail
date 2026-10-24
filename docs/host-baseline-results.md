@@ -25,7 +25,7 @@ Every one of the 177 host IDs has a unique match; no fuzzy matching is used.
 
 All **16,597 known** binary labels agree with `MLC > 0`. All **41 missing** MLC
 values were encoded as zero in the GenoPHI subset: 39 pairs for `370D`, and two
-for `ECOR53`. The old registered bytes and historical benchmark are retained;
+for `ECOR53`. The old registered bytes are retained;
 new training uses the explicitly curated observed cohort. The saved exclusion
 list and full host split manifest are in
 [`data/studies/results/`](../data/studies/results/).

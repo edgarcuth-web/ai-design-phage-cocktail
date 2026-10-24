@@ -36,7 +36,7 @@ The endpoint descriptor in
 [`data/endpoints/`](../data/endpoints/genophi_ecoli_source_interaction.v1.json)
 is derived from the dataset registry. Changing its definition requires a new
 reviewed endpoint/version and creates different bundle/result hashes. It does
-not map to the legacy `productive_infection` target.
+not map to SDL's mechanistic `productive_infection` target.
 
 FASTA input means already admitted, assembled DNA. FASTQ QC/assembly and scientific
 annotation are SDL ingestion tasks and are not implemented by this model
@@ -73,15 +73,14 @@ Software acceptance is executable now:
 2. Changed bytes, wrong pair identity, missing required inputs, path escapes,
    future inputs and wrong-bundle results fail. Partial/absent annotation remains
    partial/absent; no zeros are synthesized.
-3. Scores cannot silently become calibrated probabilities or legacy mechanistic
+3. Scores cannot silently become calibrated probabilities or mechanistic
    predictions. No inference produces an explicit `not_estimated` result.
 
 Scientific acceptance for a **host-aware model** is separate:
 
 1. Verify the registered data checksum, source endpoint and host/phage ID mapping.
    Freeze dataset, representation, preprocessing, code, weights and split IDs.
-2. Preserve the historical strain-ID benchmark for reproduction. New training
-   uses observed-label curation and genomic host groups (70/15/15 groups, seed 42).
+2. Training uses observed-label curation and genomic host groups (70/15/15 groups, seed 42).
    Fit preprocessing on training data; fit thresholds/calibration on validation
    only. A strain-ID split alone does not prove genomic separation.
 3. Report AUROC, average precision, Brier and log loss against all three baselines
@@ -108,6 +107,3 @@ predictor is one dependency. Existing source-label scores remain research output
 until an endpoint-specific selection policy is validated. The legacy SDL
 CandidateSet policy consumes productive-infection estimates and cannot consume
 these source-label scores by relabelling them.
-
-The old independence/coverage functions remain offline research baselines. Their
-union of individually observed positive pairs is not a measured cocktail outcome.

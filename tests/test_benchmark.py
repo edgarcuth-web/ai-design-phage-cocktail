@@ -1,10 +1,8 @@
+import numpy as np
 import pandas as pd
 import pytest
 
-from phage_cocktail.benchmark import (
-    evaluate_broadest_cocktails,
-    evaluate_pairwise_baselines,
-)
+from phage_cocktail.benchmark import classification_metrics, pairwise_baseline_predictions
 
 
 def _frame(bacteria):
@@ -23,34 +21,17 @@ def test_phage_prevalence_discriminates_broad_from_narrow_phage():
     train = _frame(["B1", "B2", "B3"])
     test = _frame(["B4", "B5"])
 
-    result = evaluate_pairwise_baselines(train, test)
+    predictions = pairwise_baseline_predictions(train, test)
 
-    assert result.loc["phage_prevalence", "auroc"] == 1.0
-    assert result.loc["coin_flip_0.5", "auroc"] == 0.5
-
-
-def test_broadest_cocktail_selects_broad_phage_first():
-    train = _frame(["B1", "B2", "B3"])
-    test = _frame(["B4", "B5"])
-
-    result = evaluate_broadest_cocktails(train, test, cocktail_sizes=[1])
-
-    assert result.loc[1, "phages"] == "broad"
-    assert result.loc[1, "held_out_actual_coverage"] == 1.0
+    assert classification_metrics(test["infection"], predictions["phage_prevalence"])["auroc"] == 1.0
+    assert classification_metrics(test["infection"], predictions["coin_flip_0.5"])["auroc"] == 0.5
+    # Beta(1,1) smoothing: (3 + 1) / (3 + 2) for the broad phage.
+    assert np.allclose(predictions["phage_prevalence"], [0.8, 0.2, 0.8, 0.2])
 
 
-def test_pairwise_benchmark_rejects_train_test_strain_overlap():
+def test_pairwise_baselines_reject_train_test_strain_overlap():
     train = _frame(["B1", "B2", "B3"])
     test = _frame(["B3", "B4"])
 
     with pytest.raises(ValueError, match="must be disjoint"):
-        evaluate_pairwise_baselines(train, test)
-
-
-def test_cocktail_coverage_rejects_missing_pairs_instead_of_treating_them_as_negative():
-    train = _frame(["B1", "B2", "B3"])
-    test = _frame(["B4", "B5"])
-    test = test[~((test["bacterium"] == "B4") & (test["phage"] == "broad"))]
-
-    with pytest.raises(ValueError, match="missing pairs are unknown"):
-        evaluate_broadest_cocktails(train, test, cocktail_sizes=[1])
+        pairwise_baseline_predictions(train, test)

@@ -6,19 +6,21 @@ import hashlib
 import json
 from pathlib import Path
 import platform
-import subprocess
 import urllib.request
 
 import numpy as np
 import pandas as pd
 import sklearn
 
-from .artifacts import atomic_write_json, sha256_file
-from .benchmark import _metrics, pairwise_baseline_predictions
-from .cohort import canonical_assembly_digest, curate_mlc, group_hosts, host_aliases
+from .artifacts import atomic_write_json, code_provenance, read_json_object, sha256_file
+from .benchmark import classification_metrics, pairwise_baseline_predictions
+from .cohort import canonical_assembly_digest, curate_mlc, group_hosts, host_aliases, host_key
+from .data import load_interactions
 from .host_baseline import fit_host_model, paired_group_bootstrap, predict_host_model
 from .registry import verify_registered_dataset
 from .split import split_by_host_group
+
+HOST_CATEGORICAL_FEATURES = ["O-type", "H-type", "LPS_type", "ABC_serotype"]
 
 
 def verify_resources(lock, data_root, *, fetch=False):
@@ -28,8 +30,12 @@ def verify_resources(lock, data_root, *, fetch=False):
     for entry in lock["resources"]:
         relative = Path(entry["path"])
         identity = (entry["kind"], entry["id"])
-        if (relative.is_absolute() or ".." in relative.parts or relative.as_posix() in paths
-                or identity in identities):
+        if (
+            relative.is_absolute()
+            or ".." in relative.parts
+            or relative.as_posix() in paths
+            or identity in identities
+        ):
             raise ValueError("resource paths and identities must be confined and unique")
         paths.add(relative.as_posix())
         identities.add(identity)
@@ -45,7 +51,10 @@ def verify_resources(lock, data_root, *, fetch=False):
             temporary = path.with_suffix(path.suffix + ".partial")
             try:
                 digest, size = hashlib.sha256(), 0
-                with urllib.request.urlopen(entry["url"], timeout=45) as response, temporary.open("xb") as output:
+                with (
+                    urllib.request.urlopen(entry["url"], timeout=45) as response,
+                    temporary.open("xb") as output,
+                ):
                     while block := response.read(1024 * 1024):
                         size += len(block)
                         if size > entry["size_bytes"]:
@@ -57,8 +66,11 @@ def verify_resources(lock, data_root, *, fetch=False):
                 temporary.replace(path)
             finally:
                 temporary.unlink(missing_ok=True)
-        if (not path.is_file() or path.stat().st_size != entry["size_bytes"]
-                or sha256_file(path) != entry["sha256"]):
+        if (
+            not path.is_file()
+            or path.stat().st_size != entry["size_bytes"]
+            or sha256_file(path) != entry["sha256"]
+        ):
             raise ValueError(f"missing or changed locked resource: {entry['path']}")
         return ((entry["kind"], entry["id"]), path)
 
@@ -66,11 +78,12 @@ def verify_resources(lock, data_root, *, fetch=False):
         return dict(pool.map(admit, files))
 
 
-def _features(hosts, metadata, defenses, categorical):
+def host_features(hosts, metadata, defenses, categorical):
+    """Join selected metadata categories and all defense counts; return (features, numeric columns)."""
     columns = {}
     for source in (metadata, defenses):
         lookup = host_aliases(source.index)
-        source_rows = [lookup[h.replace("-", "").upper()] for h in hosts]
+        source_rows = [lookup[host_key(h)] for h in hosts]
         selected = source.loc[source_rows].copy()
         selected.index = hosts
         if source is metadata:
@@ -83,16 +96,17 @@ def _features(hosts, metadata, defenses, categorical):
 
 
 def _source_provenance(repo, protocol_path, lock_path):
-    paths = [Path(__file__), Path(__file__).with_name("cohort.py"),
-             Path(__file__).with_name("host_baseline.py"), Path(__file__).with_name("split.py"),
-             Path(__file__).with_name("benchmark.py"), Path(__file__).with_name("data.py"),
-             Path(__file__).with_name("registry.py"), Path(__file__).with_name("artifacts.py"),
-             repo / "scripts/run_host_baseline.py"]
-    return {"protocol_sha256": sha256_file(protocol_path), "resource_lock_sha256": sha256_file(lock_path),
-            "code_base_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip(),
-            "code_files_sha256": {p.relative_to(repo).as_posix(): sha256_file(p) for p in paths},
-            "versions": {"python": platform.python_version(), "numpy": np.__version__,
-                         "pandas": pd.__version__, "scikit_learn": sklearn.__version__}}
+    return {
+        "protocol_sha256": sha256_file(protocol_path),
+        "resource_lock_sha256": sha256_file(lock_path),
+        **code_provenance(repo, repo / "scripts/run_host_baseline.py"),
+        "versions": {
+            "python": platform.python_version(),
+            "numpy": np.__version__,
+            "pandas": pd.__version__,
+            "scikit_learn": sklearn.__version__,
+        },
+    }
 
 
 def run_study(repo, data_root, output_dir, *, fetch=False):
@@ -102,22 +116,25 @@ def run_study(repo, data_root, output_dir, *, fetch=False):
         raise ValueError("study output directory must be new")
     protocol_path = repo / "data/studies/genophi_host_baseline.v1.json"
     lock_path = repo / "data/studies/genophi_host_baseline.resources.v1.json"
-    protocol, lock = json.loads(protocol_path.read_text()), json.loads(lock_path.read_text())
+    protocol, lock = read_json_object(protocol_path), read_json_object(lock_path)
     if protocol["study_id"] != lock["study_id"]:
         raise ValueError("study and resource lock identities differ")
     resources = verify_resources(lock, data_root, fetch=fetch)
     subset = resources[("table", "subset")]
     verify_registered_dataset(repo / protocol["subset_manifest"], subset)
-    from .data import load_interactions
     pairs = load_interactions(subset)
     mlc = pd.read_csv(resources[("table", "mlc")], sep=";", index_col=0)
     observed, excluded, aliases = curate_mlc(pairs, mlc)
     hosts = sorted(observed.bacterium.unique())
     if set(hosts) != set(pairs.bacterium):
         raise ValueError("a host has no observed MLC pairs; this protocol requires cohort review")
-    assembly_digests = {host: canonical_assembly_digest(resources[("host_genome", host)]) for host in hosts}
-    phage_digests = {phage: canonical_assembly_digest(resources[("phage_genome", phage)])
-                    for phage in sorted(observed.phage.unique())}
+    assembly_digests = {
+        host: canonical_assembly_digest(resources[("host_genome", host)]) for host in hosts
+    }
+    phage_digests = {
+        phage: canonical_assembly_digest(resources[("phage_genome", phage)])
+        for phage in sorted(observed.phage.unique())
+    }
     distances = pd.read_csv(resources[("table", "core_distances")], sep="\t", index_col=0)
     groups = group_hosts(hosts, distances, assembly_digests,
                         threshold=protocol["grouping"]["core_distance_threshold"])
@@ -126,12 +143,14 @@ def run_study(repo, data_root, output_dir, *, fetch=False):
     metadata = pd.read_csv(resources[("table", "metadata")], sep=";", index_col=0)
     defenses = pd.read_csv(resources[("table", "defenses")], sep=";", index_col=0)
     categorical = protocol["features"]["categorical"]
-    features, numeric = _features(hosts, metadata, defenses, categorical)
+    features, numeric = host_features(hosts, metadata, defenses, categorical)
     provenance = _source_provenance(repo, protocol_path, lock_path)
     output_dir.mkdir(parents=True)
     assigned.to_csv(output_dir / "observed_pairs.csv", index=False)
     excluded.to_csv(output_dir / "excluded_pairs.csv", index=False)
-    host_table = assigned[["bacterium", "host_group", "split"]].drop_duplicates().sort_values("bacterium")
+    host_table = (
+        assigned[["bacterium", "host_group", "split"]].drop_duplicates().sort_values("bacterium")
+    )
     host_table["source_bacterium"] = host_table.bacterium.map(aliases)
     host_table["assembly_sha256"] = host_table.bacterium.map(assembly_digests)
     host_table.to_csv(output_dir / "host_splits.csv", index=False)
@@ -158,7 +177,9 @@ def run_study(repo, data_root, output_dir, *, fetch=False):
         predictions = pairwise_baseline_predictions(train, held)
         predictions["host_logistic"] = predict_host_model(model, held, features)
         for name, scores in predictions.items():
-            metrics.append({"partition": partition, "model": name, **_metrics(held.infection, scores)})
+            metrics.append(
+                {"partition": partition, "model": name, **classification_metrics(held.infection, scores)}
+            )
             held[name] = scores
         prediction_tables.append(held)
     predictions = pd.concat(prediction_tables, ignore_index=True)
@@ -167,29 +188,54 @@ def run_study(repo, data_root, output_dir, *, fetch=False):
     metrics.to_csv(output_dir / "metrics.csv", index=False)
     test = predictions[predictions.split == "test"]
     evaluation = protocol["evaluation"]
-    interval = paired_group_bootstrap(test, test.host_logistic.to_numpy(), test.phage_prevalence.to_numpy(),
-                                      resamples=evaluation["bootstrap_resamples"],
-                                      seed=evaluation["bootstrap_seed"],
-                                      confidence=evaluation["confidence_level"])
-    split_summary = {name: {"hosts": int(part.bacterium.nunique()), "groups": int(part.host_group.nunique()),
-                            "pairs": len(part), "positive": int(part.infection.sum())}
-                     for name, part in assigned.groupby("split")}
-    report = {"study_id": protocol["study_id"], "provenance": provenance,
-              "audit": {"candidate_pairs": len(pairs), "observed_pairs": len(observed),
-                        "unknown_pairs_excluded": len(excluded), "known_binary_disagreements": 0,
-                        "original_missing_encoded_zero": int(excluded.source_binary.eq(0).sum()),
-                        "source_mlc_counts": observed.source_mlc.value_counts().sort_index().to_dict(),
-                        "missing_by_host": excluded.bacterium.value_counts().to_dict(),
-                        "host_genomes_verified": len(assembly_digests), "phage_genomes_verified": len(phage_digests),
-                        "unique_host_assemblies": len(set(assembly_digests.values())),
-                        "unique_phage_assemblies": len(set(phage_digests.values())),
-                        "defense_features": len(numeric), "categorical_features": categorical},
-              "split": split_summary, "metrics": metrics.to_dict(orient="records"),
-              "primary_comparison": interval,
-              "single_class_fallback_phages": [p for p, m in model["phages"].items()
-                                                if m["kind"] == "single_class_prevalence"],
-              "artifacts_sha256": {p.name: sha256_file(p) for p in sorted(output_dir.iterdir()) if p.is_file()},
-              "scope": protocol["output_semantics"]}
+    interval = paired_group_bootstrap(
+        test,
+        test.host_logistic.to_numpy(),
+        test.phage_prevalence.to_numpy(),
+        resamples=evaluation["bootstrap_resamples"],
+        seed=evaluation["bootstrap_seed"],
+        confidence=evaluation["confidence_level"],
+    )
+    split_summary = {
+        name: {
+            "hosts": int(part.bacterium.nunique()),
+            "groups": int(part.host_group.nunique()),
+            "pairs": len(part),
+            "positive": int(part.infection.sum()),
+        }
+        for name, part in assigned.groupby("split")
+    }
+    # curate_mlc raises on any disagreement, so reaching this point means zero.
+    audit = {
+        "candidate_pairs": len(pairs),
+        "observed_pairs": len(observed),
+        "unknown_pairs_excluded": len(excluded),
+        "known_binary_disagreements": 0,
+        "original_missing_encoded_zero": int(excluded.source_binary.eq(0).sum()),
+        "source_mlc_counts": observed.source_mlc.value_counts().sort_index().to_dict(),
+        "missing_by_host": excluded.bacterium.value_counts().to_dict(),
+        "host_genomes_verified": len(assembly_digests),
+        "phage_genomes_verified": len(phage_digests),
+        "unique_host_assemblies": len(set(assembly_digests.values())),
+        "unique_phage_assemblies": len(set(phage_digests.values())),
+        "defense_features": len(numeric),
+        "categorical_features": categorical,
+    }
+    report = {
+        "study_id": protocol["study_id"],
+        "provenance": provenance,
+        "audit": audit,
+        "split": split_summary,
+        "metrics": metrics.to_dict(orient="records"),
+        "primary_comparison": interval,
+        "single_class_fallback_phages": [
+            p for p, m in model["phages"].items() if m["kind"] == "single_class_prevalence"
+        ],
+        "artifacts_sha256": {
+            p.name: sha256_file(p) for p in sorted(output_dir.iterdir()) if p.is_file()
+        },
+        "scope": protocol["output_semantics"],
+    }
     atomic_write_json(report, output_dir / "report.json")
     print(metrics.round(4).to_string(index=False), flush=True)
     print(json.dumps(interval, indent=2), flush=True)

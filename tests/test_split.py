@@ -1,50 +1,33 @@
 import pandas as pd
 
-from phage_cocktail.split import split_by_bacterium
+from phage_cocktail.split import assign_partitions, split_by_host_group
+
+NAMES = [f"G{i:02d}" for i in range(20)]
 
 
-def _complete_matrix(n_bacteria=20, n_phages=3):
-    return pd.DataFrame(
+def test_every_partition_is_used_with_largest_remainder_counts():
+    assignment = assign_partitions(NAMES, seed=42)
+
+    counts = pd.Series(assignment).value_counts()
+    assert counts.to_dict() == {"train": 14, "validation": 3, "test": 3}
+
+
+def test_assignment_is_stable_under_input_order_and_changes_with_seed():
+    assert assign_partitions(NAMES, seed=42) == assign_partitions(reversed(NAMES), seed=42)
+    assert assign_partitions(NAMES, seed=42) != assign_partitions(NAMES, seed=43)
+
+
+def test_host_groups_are_never_split_across_partitions():
+    frame = pd.DataFrame(
         [
-            {
-                "bacterium": f"B{b:02d}",
-                "phage": f"P{p:02d}",
-                "infection": (b + p) % 2,
-            }
-            for b in range(n_bacteria)
-            for p in range(n_phages)
+            {"bacterium": f"B{b:02d}", "phage": f"P{p}", "infection": (b + p) % 2}
+            for b in range(40)
+            for p in range(3)
         ]
     )
+    groups = {f"B{b:02d}": f"G{b // 2:02d}" for b in range(40)}
 
+    result = split_by_host_group(frame, groups, seed=42)
 
-def test_split_keeps_each_bacterium_in_exactly_one_partition():
-    result = split_by_bacterium(_complete_matrix(), seed=42)
-
-    per_bacterium = result.groupby("bacterium")["split"].nunique()
-
-    assert per_bacterium.max() == 1
+    assert result.groupby("host_group")["split"].nunique().max() == 1
     assert set(result["split"]) == {"train", "validation", "test"}
-
-
-def test_split_is_stable_under_row_reordering():
-    frame = _complete_matrix()
-
-    a = split_by_bacterium(frame, seed=42)
-    b = split_by_bacterium(frame.sample(frac=1, random_state=7), seed=42)
-
-    map_a = a.drop_duplicates("bacterium").set_index("bacterium")["split"].to_dict()
-    map_b = b.drop_duplicates("bacterium").set_index("bacterium")["split"].to_dict()
-
-    assert map_a == map_b
-
-
-def test_different_seed_changes_assignment():
-    frame = _complete_matrix()
-
-    a = split_by_bacterium(frame, seed=42)
-    b = split_by_bacterium(frame, seed=43)
-
-    map_a = a.drop_duplicates("bacterium").set_index("bacterium")["split"].to_dict()
-    map_b = b.drop_duplicates("bacterium").set_index("bacterium")["split"].to_dict()
-
-    assert map_a != map_b

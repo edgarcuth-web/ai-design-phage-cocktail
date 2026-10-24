@@ -40,19 +40,23 @@ data/
 models/             # frozen development JSON weights and model card
 notebooks/          # exploration and experiments
 src/phage_cocktail/
-  artifacts.py      # canonical JSON hashes and raw-file digests
-  model_interface.py # exchange validation and CLI
-  input_bundle.py   # frozen input/resource consumer and PairPrediction
-  baseline.py       # simple cocktail probability baseline
-  data.py           # observed interaction-table loading/validation
-  registry.py       # dataset checksum and summary verification
-  split.py          # deterministic strain-level splits
-  benchmark.py      # leakage-guarded pairwise/cocktail baselines
-  cohort.py         # published MLC reconciliation and genomic host grouping
-  host_baseline.py  # train-only preprocessing and known-phage logistic baseline
-  host_study.py     # locked real-data audit/training/evaluation runner
+  artifacts.py        # canonical JSON hashes, file digests, code provenance, staged outputs
+  model_interface.py  # exchange validation and CLI
+  input_bundle.py     # frozen input/resource consumer and PairPrediction
+  analysis.py         # interaction-table summary statistics
+  data.py             # observed interaction-table loading/validation
+  registry.py         # dataset checksum and summary verification
+  split.py            # deterministic strain- and group-level splits
+  benchmark.py        # host-agnostic comparator baselines and metrics
+  cohort.py           # MLC reconciliation, FASTA digests and genomic host grouping
+  host_baseline.py    # train-only preprocessing and known-phage logistic baseline
+  host_study.py       # locked real-data audit/training/evaluation runner
+  pair_cohort.py      # exact-sequence identity audit for paired inputs
+  paired_splits.py    # phage-neighbour grouping and crossed paired partitions
+  paired_baseline.py  # 4-mer features, additive pair models and grouped metrics
+  genophi_reference.py # optional GenoPHI reference workflow helpers
+  schemas/            # ModelInputBundle / PairPrediction v1 wire schemas
 tests/              # automated tests
-schemas/            # bundle/pair-result and legacy request/result wire schemas
 ```
 
 ## Dataset and labels
@@ -85,9 +89,7 @@ separates unresolved, uncalibrated-score and probability outputs.
 phage-model-interface validate-bundle tests/fixtures/input_bundle/bundle.json --require-sequence host
 ```
 
-The fixture is synthetic and tests software only. The legacy ModelRequest /
-ModelResult v1 commands remain for existing consumers; their three mechanistic
-targets are not aliases for source labels. See
+The fixture is synthetic and tests software only. See
 [`docs/model-interface.md`](docs/model-interface.md) for the complete round trip.
 
 ## Setup
@@ -113,25 +115,6 @@ python scripts/explore_interactions.py
 ```
 
 For interactive exploration, open `notebooks/01_explore_interactions.ipynb`.
-
-## Step 2: historical binary-matrix benchmark
-
-```bash
-python scripts/run_benchmarks.py
-```
-
-Or open `notebooks/02_leakage_safe_benchmark.ipynb`.
-
-The split is 70%/15%/15% by bacterial strain. No target strain is shared between
-train, validation, and test. Phage identities may be shared across partitions,
-so this measures generalization to unseen strains with known phages, not unseen
-phages. Cocktail coverage evaluation fails if selected-phage/test-strain pairs
-are missing rather than treating missing outcomes as negatives.
-
-These historical results include the 41 source-coded unknowns and are retained
-for reproducibility. Use the audited, genomically grouped study below for new
-observed-label evaluation. Historical results and their interpretation are in
-[`docs/step2_benchmark.md`](docs/step2_benchmark.md).
 
 ## First observed-label host-feature study
 

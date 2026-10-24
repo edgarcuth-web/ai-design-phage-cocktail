@@ -55,7 +55,7 @@ output state; it does not describe an observed biological outcome.
 | ModelInputBundle v1 | Binds a source endpoint, exact pair, assay context and inputs by content hash | Source protocol, decision rule, missingness and relevance to the requested task |
 | PairPrediction v1 | Binds the exact input bundle; distinguishes unresolved, score and probability | Model target matches the requested source endpoint; applicability and evaluation evidence |
 | Source probability admission | Requires a declared verified assay definition, calibration digest and containing uncertainty interval | Whether those claims and artifacts are valid; calibration alone does not map the endpoint to a mechanism |
-| Legacy ModelResult / InteractionPrediction | Represents adsorption, productive infection and resistance emergence separately | Target-specific label evidence, calibration and assay comparability |
+| SDL InteractionPrediction | Represents adsorption, productive infection and resistance emergence separately | Target-specific label evidence, calibration and assay comparability |
 | CandidateSet screening policy | Accepts InteractionPrediction; ranks productive-infection lower bounds and retains an unresolved exploration queue | Whether the supplied mechanistic estimates are scientifically suitable for that context |
 | LearningObservation | Requires an explicit assessor target/label and exact physical phenotype lineage | Whether the observation actually supports the declared target |
 
