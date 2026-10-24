@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "identical_feature_ties_checked": "All 18 scenarios, each regime/partition, host-only within host and phage-only within phage",
+  "saved_primary_models_max_abs_score_difference": {
+    "host_only_pooled_logistic": 0.0,
+    "phage_only_logistic": 0.0,
+    "host_phage_additive_logistic": 0.0
+  },
+  "diagnostic_parent": "data/studies/results/paired_baseline.v1/NUMERIC_QA.json",
+  "correction": "Fixed feature-order float64 accumulation; all unchanged planned scenarios rerun; no parameter-grid or data-selection revisions."
+}

@@ -1,0 +1,2157 @@
+{
+  "study_id": "genophi-paired-baseline:v1",
+  "primary_scenario": "i95_s42_observation_equal",
+  "provenance": {
+    "protocol_sha256": "dac68e0627fb6c003f63e3abfa094ec4196faa6482ed1d92e3fb435f1f2d05d0",
+    "versions": {
+      "python": "3.12.14",
+      "numpy": "2.5.4",
+      "pandas": "2.3.3",
+      "scikit-learn": "1.9.1",
+      "scipy": "1.18.1",
+      "joblib": "1.6.0",
+      "threadpoolctl": "3.7.0"
+    },
+    "code_base_revision": "f9b5f32f5c9da4f8541525789e461e51075a7ad0",
+    "code_sha256": {
+      "scripts/run_paired_baseline.py": "c9725199feb9b25e30027b90cf0f803eb85932a48743c5ef6a004e5dc70e8154",
+      "src/phage_cocktail/paired_baseline.py": "a4e5fc9aa9a52d2dfeb9159ee8b2750fc8ba1e511cef13acf4552ff0f2b791b1",
+      "src/phage_cocktail/host_baseline.py": "78af49d60438c3d7ccde5bfe679ce7bed00656d61b18f4e298f89848ef220c6f",
+      "src/phage_cocktail/cohort.py": "f7350aede86b009d2bc446639e98066df97a285bb411afc7111cb8cde1c04429",
+      "src/phage_cocktail/host_study.py": "d2412a868194db6dd69ff7f009ea1630039c6606d56eb7582306c74e18d9cbf8",
+      "src/phage_cocktail/artifacts.py": "e6897f728c5cdf66f207aeb36edfcbd8fd513d662c1e3cef40ffedfc95994c08",
+      "src/phage_cocktail/registry.py": "21b9a2052906fecf0328ad89029a17d78821fd62704bf03cef0a52ab300e12d2",
+      "src/phage_cocktail/data.py": "7ed230c370d99cd451929171ce2a8db76a245d1e1455c37cdeef1f1db366e916"
+    },
+    "resource_lock_sha256": "952c969be8cf52c79e89c06d5acdb0acd759e3f7c58665a623b7dd6ac3964fed",
+    "split_freeze_report_sha256": "11923a96ecdcd808a80057e1a02c73f87d6a838ec84e0214dafb031b5715a797",
+    "data_reuse_review_sha256": "6c9ddee4d994211614464c5414ade82df5d1429e5196bca152f196790a60807b"
+  },
+  "primary": {
+    "identity": 0.95,
+    "seed": 42,
+    "weighting": "observation_equal",
+    "selected_C": {
+      "host_only_pooled_logistic": 1.0,
+      "phage_only_logistic": 1.0,
+      "host_phage_additive_logistic": 1.0
+    },
+    "contrasts": [
+      {
+        "regime": "cold_host",
+        "delta_average_precision": 0.16514546152695514,
+        "interval": [
+          0.11329933595610817,
+          0.25209575576199367
+        ],
+        "improvement_supported": true,
+        "resamples": 2000,
+        "seed": 20261022,
+        "resampled_groups": {
+          "host_group": 22
+        },
+        "valid_resamples": 2000,
+        "single_class_resamples": 0,
+        "status": "conditional_development_interval"
+      },
+      {
+        "regime": "cold_phage",
+        "delta_average_precision": 0.07760623661933536,
+        "interval": [
+          -0.13128281905687272,
+          0.2687737587617936
+        ],
+        "improvement_supported": false,
+        "resamples": 2000,
+        "seed": 20261022,
+        "resampled_groups": {
+          "phage_group": 10
+        },
+        "valid_resamples": 2000,
+        "single_class_resamples": 0,
+        "status": "conditional_development_interval"
+      },
+      {
+        "regime": "double_cold",
+        "delta_average_precision": 0.03994873736626614,
+        "interval": [
+          -0.11753799486304664,
+          0.29496516989637833
+        ],
+        "improvement_supported": false,
+        "resamples": 2000,
+        "seed": 20261022,
+        "resampled_groups": {
+          "host_group": 22,
+          "phage_group": 10
+        },
+        "valid_resamples": 2000,
+        "single_class_resamples": 0,
+        "status": "conditional_development_interval"
+      },
+      {
+        "regime": "warm_pair",
+        "delta_average_precision": 0.22853310095461565,
+        "interval": [
+          0.05776341703959209,
+          0.41826853865599034
+        ],
+        "improvement_supported": true,
+        "resamples": 2000,
+        "seed": 20261022,
+        "resampled_groups": {
+          "host_group": 95,
+          "phage_group": 48
+        },
+        "valid_resamples": 2000,
+        "single_class_resamples": 0,
+        "status": "conditional_development_interval"
+      }
+    ]
+  },
+  "primary_test_metrics": [
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_host",
+      "partition": "test",
+      "model": "host_only_pooled_logistic",
+      "rows": 2210,
+      "scored_rows": 2210,
+      "coverage": 1.0,
+      "positive_rows": 572,
+      "status": "uncalibrated_score",
+      "average_precision": 0.3048012243750448,
+      "auroc": 0.5875374625374625,
+      "brier": 0.20364624153063618,
+      "log_loss": 0.6459433630399827,
+      "weighted_total": 2210.0,
+      "weighted_positive": 572.0,
+      "macro_bacterium_ap": 0.26666666666666666,
+      "macro_bacterium_defined": 33,
+      "macro_bacterium_undefined": 1,
+      "macro_phage_ap": 0.4329489267461424,
+      "macro_phage_defined": 59,
+      "macro_phage_undefined": 6
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_host",
+      "partition": "test",
+      "model": "phage_only_logistic",
+      "rows": 2210,
+      "scored_rows": 2210,
+      "coverage": 1.0,
+      "positive_rows": 572,
+      "status": "uncalibrated_score",
+      "average_precision": 0.49009464338739644,
+      "auroc": 0.7590342349957735,
+      "brier": 0.16327263421369048,
+      "log_loss": 0.49365362933876505,
+      "weighted_total": 2210.0,
+      "weighted_positive": 572.0,
+      "macro_bacterium_ap": 0.569589383652008,
+      "macro_bacterium_defined": 33,
+      "macro_bacterium_undefined": 1,
+      "macro_phage_ap": 0.28534094685640055,
+      "macro_phage_defined": 59,
+      "macro_phage_undefined": 6
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_host",
+      "partition": "test",
+      "model": "host_phage_additive_logistic",
+      "rows": 2210,
+      "scored_rows": 2210,
+      "coverage": 1.0,
+      "positive_rows": 572,
+      "status": "uncalibrated_score",
+      "average_precision": 0.46994668590199995,
+      "auroc": 0.7490436913513836,
+      "brier": 0.17925473849542375,
+      "log_loss": 0.585504932062998,
+      "weighted_total": 2210.0,
+      "weighted_positive": 572.0,
+      "macro_bacterium_ap": 0.569656735815992,
+      "macro_bacterium_defined": 33,
+      "macro_bacterium_undefined": 1,
+      "macro_phage_ap": 0.4546132157482554,
+      "macro_phage_defined": 59,
+      "macro_phage_undefined": 6
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_host",
+      "partition": "test",
+      "model": "global_prevalence",
+      "rows": 2210,
+      "scored_rows": 2210,
+      "coverage": 1.0,
+      "positive_rows": 572,
+      "status": "uncalibrated_score",
+      "average_precision": 0.25882352941176473,
+      "auroc": 0.5,
+      "brier": 0.1934559591128395,
+      "log_loss": 0.5763808460420125,
+      "weighted_total": 2210.0,
+      "weighted_positive": 572.0,
+      "macro_bacterium_ap": 0.26666666666666666,
+      "macro_bacterium_defined": 33,
+      "macro_bacterium_undefined": 1,
+      "macro_phage_ap": 0.2851445663010968,
+      "macro_phage_defined": 59,
+      "macro_phage_undefined": 6
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_host",
+      "partition": "test",
+      "model": "phage_prevalence",
+      "rows": 2210,
+      "scored_rows": 2210,
+      "coverage": 1.0,
+      "positive_rows": 572,
+      "status": "uncalibrated_score",
+      "average_precision": 0.5066024296696671,
+      "auroc": 0.7658858235781313,
+      "brier": 0.1612372116091453,
+      "log_loss": 0.4880468978779518,
+      "weighted_total": 2210.0,
+      "weighted_positive": 572.0,
+      "macro_bacterium_ap": 0.5915948807516042,
+      "macro_bacterium_defined": 33,
+      "macro_bacterium_undefined": 1,
+      "macro_phage_ap": 0.2851445663010968,
+      "macro_phage_defined": 59,
+      "macro_phage_undefined": 6
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_host",
+      "partition": "test",
+      "model": "legacy_host_logistic_refit",
+      "rows": 2210,
+      "scored_rows": 2210,
+      "coverage": 1.0,
+      "positive_rows": 572,
+      "status": "uncalibrated_score",
+      "average_precision": 0.5468378899518362,
+      "auroc": 0.7904067086759394,
+      "brier": 0.1626183061337098,
+      "log_loss": 0.5013278060674978,
+      "weighted_total": 2210.0,
+      "weighted_positive": 572.0,
+      "macro_bacterium_ap": 0.6034456548887627,
+      "macro_bacterium_defined": 33,
+      "macro_bacterium_undefined": 1,
+      "macro_phage_ap": 0.4763403530144099,
+      "macro_phage_defined": 59,
+      "macro_phage_undefined": 6
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_phage",
+      "partition": "test",
+      "model": "host_only_pooled_logistic",
+      "rows": 1633,
+      "scored_rows": 1633,
+      "coverage": 1.0,
+      "positive_rows": 314,
+      "status": "uncalibrated_score",
+      "average_precision": 0.3985209288657035,
+      "auroc": 0.7388824770744097,
+      "brier": 0.13786875480633168,
+      "log_loss": 0.4366101010612344,
+      "weighted_total": 1633.0,
+      "weighted_positive": 314.0,
+      "macro_bacterium_ap": 0.2556443556443556,
+      "macro_bacterium_defined": 88,
+      "macro_bacterium_undefined": 29,
+      "macro_phage_ap": 0.4996252981374076,
+      "macro_phage_defined": 14,
+      "macro_phage_undefined": 0
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_phage",
+      "partition": "test",
+      "model": "phage_only_logistic",
+      "rows": 1633,
+      "scored_rows": 1633,
+      "coverage": 1.0,
+      "positive_rows": 314,
+      "status": "uncalibrated_score",
+      "average_precision": 0.3380484072078736,
+      "auroc": 0.6987005210471164,
+      "brier": 0.15278740485498415,
+      "log_loss": 0.47345962314639334,
+      "weighted_total": 1633.0,
+      "weighted_positive": 314.0,
+      "macro_bacterium_ap": 0.5751681173240862,
+      "macro_bacterium_defined": 88,
+      "macro_bacterium_undefined": 29,
+      "macro_phage_ap": 0.19169600508484638,
+      "macro_phage_defined": 14,
+      "macro_phage_undefined": 0
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_phage",
+      "partition": "test",
+      "model": "host_phage_additive_logistic",
+      "rows": 1633,
+      "scored_rows": 1633,
+      "coverage": 1.0,
+      "positive_rows": 314,
+      "status": "uncalibrated_score",
+      "average_precision": 0.47612716548503886,
+      "auroc": 0.825332113210645,
+      "brier": 0.13387477486718502,
+      "log_loss": 0.41595827886822523,
+      "weighted_total": 1633.0,
+      "weighted_positive": 314.0,
+      "macro_bacterium_ap": 0.5754298093708162,
+      "macro_bacterium_defined": 88,
+      "macro_bacterium_undefined": 29,
+      "macro_phage_ap": 0.4980855036457163,
+      "macro_phage_defined": 14,
+      "macro_phage_undefined": 0
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_phage",
+      "partition": "test",
+      "model": "global_prevalence",
+      "rows": 1633,
+      "scored_rows": 1633,
+      "coverage": 1.0,
+      "positive_rows": 314,
+      "status": "uncalibrated_score",
+      "average_precision": 0.19228413962033067,
+      "auroc": 0.5,
+      "brier": 0.15600078475393983,
+      "log_loss": 0.4916001464534033,
+      "weighted_total": 1633.0,
+      "weighted_positive": 314.0,
+      "macro_bacterium_ap": 0.2556443556443556,
+      "macro_bacterium_defined": 88,
+      "macro_bacterium_undefined": 29,
+      "macro_phage_ap": 0.19219936734929238,
+      "macro_phage_defined": 14,
+      "macro_phage_undefined": 0
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_phage",
+      "partition": "test",
+      "model": "phage_prevalence",
+      "rows": 1633,
+      "scored_rows": 0,
+      "coverage": 0.0,
+      "positive_rows": 314,
+      "status": "not_estimated_unsupported_phages"
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "cold_phage",
+      "partition": "test",
+      "model": "legacy_host_logistic_refit",
+      "rows": 1633,
+      "scored_rows": 0,
+      "coverage": 0.0,
+      "positive_rows": 314,
+      "status": "not_estimated_unsupported_phages"
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "double_cold",
+      "partition": "test",
+      "model": "host_only_pooled_logistic",
+      "rows": 476,
+      "scored_rows": 476,
+      "coverage": 1.0,
+      "positive_rows": 108,
+      "status": "uncalibrated_score",
+      "average_precision": 0.34858499047156605,
+      "auroc": 0.6366747181964574,
+      "brier": 0.17145279944894698,
+      "log_loss": 0.5601475928820829,
+      "weighted_total": 476.0,
+      "weighted_positive": 108.0,
+      "macro_bacterium_ap": 0.29670329670329665,
+      "macro_bacterium_defined": 26,
+      "macro_bacterium_undefined": 8,
+      "macro_phage_ap": 0.4941976384302707,
+      "macro_phage_defined": 13,
+      "macro_phage_undefined": 1
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "double_cold",
+      "partition": "test",
+      "model": "phage_only_logistic",
+      "rows": 476,
+      "scored_rows": 476,
+      "coverage": 1.0,
+      "positive_rows": 108,
+      "status": "uncalibrated_score",
+      "average_precision": 0.2937210302406381,
+      "auroc": 0.5966686795491144,
+      "brier": 0.19068390596019696,
+      "log_loss": 0.5716703182295985,
+      "weighted_total": 476.0,
+      "weighted_positive": 108.0,
+      "macro_bacterium_ap": 0.5138960478623941,
+      "macro_bacterium_defined": 26,
+      "macro_bacterium_undefined": 8,
+      "macro_phage_ap": 0.24434389140271492,
+      "macro_phage_defined": 13,
+      "macro_phage_undefined": 1
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "double_cold",
+      "partition": "test",
+      "model": "host_phage_additive_logistic",
+      "rows": 476,
+      "scored_rows": 476,
+      "coverage": 1.0,
+      "positive_rows": 108,
+      "status": "uncalibrated_score",
+      "average_precision": 0.3885337278378322,
+      "auroc": 0.6667924718196458,
+      "brier": 0.18987442533102034,
+      "log_loss": 0.6379597524370352,
+      "weighted_total": 476.0,
+      "weighted_positive": 108.0,
+      "macro_bacterium_ap": 0.5151246803410264,
+      "macro_bacterium_defined": 26,
+      "macro_bacterium_undefined": 8,
+      "macro_phage_ap": 0.529968759155754,
+      "macro_phage_defined": 13,
+      "macro_phage_undefined": 1
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "double_cold",
+      "partition": "test",
+      "model": "global_prevalence",
+      "rows": 476,
+      "scored_rows": 476,
+      "coverage": 1.0,
+      "positive_rows": 108,
+      "status": "uncalibrated_score",
+      "average_precision": 0.22689075630252098,
+      "auroc": 0.5,
+      "brier": 0.17548092825789952,
+      "log_loss": 0.5356939258208936,
+      "weighted_total": 476.0,
+      "weighted_positive": 108.0,
+      "macro_bacterium_ap": 0.29670329670329665,
+      "macro_bacterium_defined": 26,
+      "macro_bacterium_undefined": 8,
+      "macro_phage_ap": 0.24434389140271492,
+      "macro_phage_defined": 13,
+      "macro_phage_undefined": 1
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "double_cold",
+      "partition": "test",
+      "model": "phage_prevalence",
+      "rows": 476,
+      "scored_rows": 0,
+      "coverage": 0.0,
+      "positive_rows": 108,
+      "status": "not_estimated_unsupported_phages"
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "double_cold",
+      "partition": "test",
+      "model": "legacy_host_logistic_refit",
+      "rows": 476,
+      "scored_rows": 0,
+      "coverage": 0.0,
+      "positive_rows": 108,
+      "status": "not_estimated_unsupported_phages"
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "warm_pair",
+      "partition": "test",
+      "model": "host_only_pooled_logistic",
+      "rows": 370,
+      "scored_rows": 370,
+      "coverage": 1.0,
+      "positive_rows": 81,
+      "status": "uncalibrated_score",
+      "average_precision": 0.5468718587006105,
+      "auroc": 0.8213080439147337,
+      "brier": 0.13176200497793386,
+      "log_loss": 0.40953048897135,
+      "weighted_total": 370.0,
+      "weighted_positive": 81.0,
+      "macro_bacterium_ap": 0.41331672203765224,
+      "macro_bacterium_defined": 43,
+      "macro_bacterium_undefined": 65,
+      "macro_phage_ap": 0.8804001322751324,
+      "macro_phage_defined": 36,
+      "macro_phage_undefined": 29
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "warm_pair",
+      "partition": "test",
+      "model": "phage_only_logistic",
+      "rows": 370,
+      "scored_rows": 370,
+      "coverage": 1.0,
+      "positive_rows": 81,
+      "status": "uncalibrated_score",
+      "average_precision": 0.4633504761295905,
+      "auroc": 0.7784185569652698,
+      "brier": 0.14076901840642816,
+      "log_loss": 0.4377316077974439,
+      "weighted_total": 370.0,
+      "weighted_positive": 81.0,
+      "macro_bacterium_ap": 0.8774824658545588,
+      "macro_bacterium_defined": 43,
+      "macro_bacterium_undefined": 65,
+      "macro_phage_ap": 0.39933353683353684,
+      "macro_phage_defined": 36,
+      "macro_phage_undefined": 29
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "warm_pair",
+      "partition": "test",
+      "model": "host_phage_additive_logistic",
+      "rows": 370,
+      "scored_rows": 370,
+      "coverage": 1.0,
+      "positive_rows": 81,
+      "status": "uncalibrated_score",
+      "average_precision": 0.7754049596552262,
+      "auroc": 0.9122986885385963,
+      "brier": 0.09177861099252942,
+      "log_loss": 0.2994929071491685,
+      "weighted_total": 370.0,
+      "weighted_positive": 81.0,
+      "macro_bacterium_ap": 0.8716685123661867,
+      "macro_bacterium_defined": 43,
+      "macro_bacterium_undefined": 65,
+      "macro_phage_ap": 0.8780853174603175,
+      "macro_phage_defined": 36,
+      "macro_phage_undefined": 29
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "warm_pair",
+      "partition": "test",
+      "model": "global_prevalence",
+      "rows": 370,
+      "scored_rows": 370,
+      "coverage": 1.0,
+      "positive_rows": 81,
+      "status": "uncalibrated_score",
+      "average_precision": 0.2189189189189189,
+      "auroc": 0.5,
+      "brier": 0.1709935628026478,
+      "log_loss": 0.5255366647984094,
+      "weighted_total": 370.0,
+      "weighted_positive": 81.0,
+      "macro_bacterium_ap": 0.41331672203765224,
+      "macro_bacterium_defined": 43,
+      "macro_bacterium_undefined": 65,
+      "macro_phage_ap": 0.3972502035002035,
+      "macro_phage_defined": 36,
+      "macro_phage_undefined": 29
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "warm_pair",
+      "partition": "test",
+      "model": "phage_prevalence",
+      "rows": 370,
+      "scored_rows": 370,
+      "coverage": 1.0,
+      "positive_rows": 81,
+      "status": "uncalibrated_score",
+      "average_precision": 0.4812601323541989,
+      "auroc": 0.7844632406339442,
+      "brier": 0.13955789950913358,
+      "log_loss": 0.43358079854399945,
+      "weighted_total": 370.0,
+      "weighted_positive": 81.0,
+      "macro_bacterium_ap": 0.8786175710594314,
+      "macro_bacterium_defined": 43,
+      "macro_bacterium_undefined": 65,
+      "macro_phage_ap": 0.3972502035002035,
+      "macro_phage_defined": 36,
+      "macro_phage_undefined": 29
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "regime": "warm_pair",
+      "partition": "test",
+      "model": "legacy_host_logistic_refit",
+      "rows": 370,
+      "scored_rows": 370,
+      "coverage": 1.0,
+      "positive_rows": 81,
+      "status": "uncalibrated_score",
+      "average_precision": 0.48030993849977355,
+      "auroc": 0.8054594386774317,
+      "brier": 0.14379856733101176,
+      "log_loss": 0.4556984631007384,
+      "weighted_total": 370.0,
+      "weighted_positive": 81.0,
+      "macro_bacterium_ap": 0.8924418604651163,
+      "macro_bacterium_defined": 43,
+      "macro_bacterium_undefined": 65,
+      "macro_phage_ap": 0.6994907407407407,
+      "macro_phage_defined": 36,
+      "macro_phage_undefined": 29
+    }
+  ],
+  "all_scenario_contrasts": [
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 1.0,
+        "host_phage_additive_logistic": 1.0
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.16514546152695514,
+          "interval": [
+            0.11329933595610817,
+            0.25209575576199367
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": 0.07760623661933536,
+          "interval": [
+            -0.13128281905687272,
+            0.2687737587617936
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.03994873736626614,
+          "interval": [
+            -0.11753799486304664,
+            0.29496516989637833
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.22853310095461565,
+          "interval": [
+            0.05776341703959209,
+            0.41826853865599034
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 95,
+            "phage_group": 48
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.95,
+      "seed": 42,
+      "weighting": "sequence_pair_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 1.0,
+        "host_phage_additive_logistic": 1.0
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.1678436449616334,
+          "interval": [
+            0.1160526170992321,
+            0.2565273025717723
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": 0.08586638919511919,
+          "interval": [
+            -0.12411268079723628,
+            0.27219490218064996
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.038232568335353934,
+          "interval": [
+            -0.12136007134335676,
+            0.2905878775627851
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.2529949716590132,
+          "interval": [
+            0.07972321142547309,
+            0.4329873908677994
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 95,
+            "phage_group": 48
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.95,
+      "seed": 43,
+      "weighting": "observation_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 0.01,
+        "host_phage_additive_logistic": 1.0
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.12865792451071995,
+          "interval": [
+            0.0707819281565723,
+            0.1929181135821992
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": -0.061771095019654276,
+          "interval": [
+            -0.14051116441685058,
+            0.05242233587623418
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.00012277137041397101,
+          "interval": [
+            -0.09272935413872663,
+            0.10172975162791116
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.2285463194907838,
+          "interval": [
+            0.06160194605617965,
+            0.38885877025799864
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 97,
+            "phage_group": 47
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.95,
+      "seed": 43,
+      "weighting": "sequence_pair_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 0.01,
+        "host_phage_additive_logistic": 1.0
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.1396265193143602,
+          "interval": [
+            0.07728419302306652,
+            0.20103002891740857
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": -0.0668678430503013,
+          "interval": [
+            -0.15388334593049532,
+            0.05813227412521971
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.005550108489234873,
+          "interval": [
+            -0.07907850122851408,
+            0.11461565005695634
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.2387707671950997,
+          "interval": [
+            0.07168221062752728,
+            0.4016399071000712
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 97,
+            "phage_group": 47
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.95,
+      "seed": 44,
+      "weighting": "observation_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 1.0,
+        "host_phage_additive_logistic": 1.0
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.05330995352667467,
+          "interval": [
+            0.019061037084547955,
+            0.10097679991227088
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": -0.05367443449782433,
+          "interval": [
+            -0.1199487661631108,
+            0.018764181474863834
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.012185046256243573,
+          "interval": [
+            -0.023782690792970358,
+            0.10201171618518373
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.19861546025320298,
+          "interval": [
+            0.06610952198229614,
+            0.3549004663558899
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 100,
+            "phage_group": 48
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.95,
+      "seed": 44,
+      "weighting": "sequence_pair_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 1.0,
+        "host_phage_additive_logistic": 1.0
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.05059902871878483,
+          "interval": [
+            0.011955901199654319,
+            0.10264071390863219
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": -0.05122780925489806,
+          "interval": [
+            -0.1184935809736461,
+            0.02104220711142324
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.00844274495930597,
+          "interval": [
+            -0.08486883907895003,
+            0.09281721278878059
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 10
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.19648573072930342,
+          "interval": [
+            0.06505664927856654,
+            0.35544487028912075
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 100,
+            "phage_group": 48
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.9,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 0.01,
+        "host_phage_additive_logistic": 0.1
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.19272624443881087,
+          "interval": [
+            0.10363734552201827,
+            0.3107225397612815
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": 0.13758196599384087,
+          "interval": [
+            -0.10845757095133075,
+            0.22033939039951578
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 7
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.07640088925820859,
+          "interval": [
+            -0.174028833181603,
+            0.3248206849086807
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 7
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.23287938725780244,
+          "interval": [
+            0.05936795297172579,
+            0.3898424173378214
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 99,
+            "phage_group": 35
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.9,
+      "seed": 42,
+      "weighting": "sequence_pair_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 1.0,
+        "host_phage_additive_logistic": 0.1
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.19196164266806642,
+          "interval": [
+            0.10404379462622794,
+            0.3109980265708806
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": 0.14817261510653063,
+          "interval": [
+            -0.10057251145134023,
+            0.22486935080788772
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 7
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.08997116663983945,
+          "interval": [
+            -0.1556977746479213,
+            0.32430291887431356
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 7
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.25691709914999794,
+          "interval": [
+            0.09512314338310597,
+            0.40969907013281565
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 99,
+            "phage_group": 35
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.9,
+      "seed": 43,
+      "weighting": "observation_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 0.1,
+        "host_phage_additive_logistic": 0.01
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.09743914516996394,
+          "interval": [
+            0.015677978256188836,
+            0.17681512596746082
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": -0.11508816965083857,
+          "interval": [
+            -0.1511161698507865,
+            -0.012357372958647217
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 7
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": -0.04307530026598569,
+          "interval": [
+            -0.13848098534225778,
+            0.060365255086870476
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 7
+          },
+          "valid_resamples": 1999,
+          "single_class_resamples": 1,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.2027060080935063,
+          "interval": [
+            0.03664118427557139,
+            0.3633417797300512
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 100,
+            "phage_group": 35
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.9,
+      "seed": 43,
+      "weighting": "sequence_pair_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 0.1,
+        "host_phage_additive_logistic": 0.01
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.10294584472394885,
+          "interval": [
+            0.018072745522564455,
+            0.18026385678414655
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": -0.09886360218934354,
+          "interval": [
+            -0.14150776712037635,
+            -0.005967229948257747
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 7
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": -0.037193672107868475,
+          "interval": [
+            -0.125703463501197,
+            0.07107906292364041
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 7
+          },
+          "valid_resamples": 1999,
+          "single_class_resamples": 1,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.22118633328856568,
+          "interval": [
+            0.04480090013786428,
+            0.3792928219797054
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 100,
+            "phage_group": 35
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.9,
+      "seed": 44,
+      "weighting": "observation_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 0.01,
+        "host_phage_additive_logistic": 1.0
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.052833343572709746,
+          "interval": [
+            0.020316732705003202,
+            0.08950571537703858
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": -0.06490124136196174,
+          "interval": [
+            -0.12189259070736225,
+            0.05938009901746965
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 7
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.05864391410795085,
+          "interval": [
+            -0.005887327661350456,
+            0.20341907310526314
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 7
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.19587887318673924,
+          "interval": [
+            0.05930172687725237,
+            0.34431441840238497
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 94,
+            "phage_group": 35
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.9,
+      "seed": 44,
+      "weighting": "sequence_pair_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 1.0,
+        "host_phage_additive_logistic": 1.0
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.056120960223465216,
+          "interval": [
+            0.022394400760027956,
+            0.09403326473237592
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": -0.061095330784217694,
+          "interval": [
+            -0.11960409009789891,
+            0.05816106202610442
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 7
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.05815933224738727,
+          "interval": [
+            -0.006105418099728298,
+            0.20187649047213174
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 7
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.19459749353542122,
+          "interval": [
+            0.06117821934874422,
+            0.34225437845036666
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 94,
+            "phage_group": 35
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.99,
+      "seed": 42,
+      "weighting": "observation_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 1.0,
+        "host_phage_additive_logistic": 0.1
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.22491238436490313,
+          "interval": [
+            0.1317797253774996,
+            0.3064925104788182
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": 0.15627652521225882,
+          "interval": [
+            -0.09023720560175275,
+            0.2385947183267055
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 12
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.09513329402822862,
+          "interval": [
+            -0.19886459932161124,
+            0.3469518266623526
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 12
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.22352292719893108,
+          "interval": [
+            0.0544664485429119,
+            0.40505066608047485
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 97,
+            "phage_group": 59
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.99,
+      "seed": 42,
+      "weighting": "sequence_pair_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 1.0,
+        "host_phage_additive_logistic": 0.1
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.22458838248795704,
+          "interval": [
+            0.13555288682134956,
+            0.305414798770155
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": 0.17115042768785,
+          "interval": [
+            -0.07427488651834242,
+            0.2499471369207986
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 12
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.10946230263619228,
+          "interval": [
+            -0.16604913155313114,
+            0.34871233224163556
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 12
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.2446014593764687,
+          "interval": [
+            0.07664790267336943,
+            0.4116189984892866
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 97,
+            "phage_group": 59
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.99,
+      "seed": 43,
+      "weighting": "observation_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 0.01,
+        "host_phage_additive_logistic": 0.1
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.1381444214908425,
+          "interval": [
+            0.07035178591534186,
+            0.21149854400176638
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": -0.021489253501863315,
+          "interval": [
+            -0.18270057684084381,
+            0.1525077818779692
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 12
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.021697725417551827,
+          "interval": [
+            -0.0967341090912359,
+            0.1569899878073204
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 12
+          },
+          "valid_resamples": 1999,
+          "single_class_resamples": 1,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.23026307169971133,
+          "interval": [
+            0.06866510476152911,
+            0.39766930747306045
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 98,
+            "phage_group": 57
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.99,
+      "seed": 43,
+      "weighting": "sequence_pair_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 0.1,
+        "phage_only_logistic": 0.01,
+        "host_phage_additive_logistic": 0.1
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.15184103001372534,
+          "interval": [
+            0.08357603551402848,
+            0.2221836229108971
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": -0.019119753714515353,
+          "interval": [
+            -0.17672105422878726,
+            0.16020311531017456
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 12
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.024679212921520977,
+          "interval": [
+            -0.0891238435361717,
+            0.163852120283296
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 12
+          },
+          "valid_resamples": 1999,
+          "single_class_resamples": 1,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.2494164502959974,
+          "interval": [
+            0.07429896700705962,
+            0.4162418851387345
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 98,
+            "phage_group": 57
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.99,
+      "seed": 44,
+      "weighting": "observation_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 0.01,
+        "host_phage_additive_logistic": 0.1
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.10990314596136538,
+          "interval": [
+            0.052691084374472286,
+            0.17964754216323978
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": 0.022688745512439823,
+          "interval": [
+            -0.07500110754021888,
+            0.11916438440075748
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 12
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.1344132742719042,
+          "interval": [
+            -0.008801301550909866,
+            0.3298839688899729
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 12
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.17865599362135803,
+          "interval": [
+            0.061362720291792024,
+            0.33534243623225685
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 102,
+            "phage_group": 58
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    },
+    {
+      "identity": 0.99,
+      "seed": 44,
+      "weighting": "sequence_pair_equal",
+      "selected_C": {
+        "host_only_pooled_logistic": 1.0,
+        "phage_only_logistic": 0.01,
+        "host_phage_additive_logistic": 0.1
+      },
+      "contrasts": [
+        {
+          "regime": "cold_host",
+          "delta_average_precision": 0.11136597685621866,
+          "interval": [
+            0.051124086032578335,
+            0.18414401234845726
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "cold_phage",
+          "delta_average_precision": 0.019688656730755427,
+          "interval": [
+            -0.07988529193553953,
+            0.118218714037466
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "phage_group": 12
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "double_cold",
+          "delta_average_precision": 0.12481393443786112,
+          "interval": [
+            -0.013006884676501193,
+            0.3068834219473288
+          ],
+          "improvement_supported": false,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 22,
+            "phage_group": 12
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        },
+        {
+          "regime": "warm_pair",
+          "delta_average_precision": 0.177778571299255,
+          "interval": [
+            0.05665137118313467,
+            0.3299055326991997
+          ],
+          "improvement_supported": true,
+          "resamples": 2000,
+          "seed": 20261022,
+          "resampled_groups": {
+            "host_group": 102,
+            "phage_group": 58
+          },
+          "valid_resamples": 2000,
+          "single_class_resamples": 0,
+          "status": "conditional_development_interval"
+        }
+      ]
+    }
+  ],
+  "full_report_sha256": "7abda5d190308b6d9d741bf986947411b012927e55088e893b661b2384121308",
+  "snapshot_artifacts_sha256": {
+    "metrics.csv": "cad5c2d42d7ce365a4ded4bbde31fa8e65f8d830f4682f66669f9a8317b8e7b0",
+    "full_report.json.gz": "45a09ec12cec25923c230ea7dc39da90b0502963ec4f00558f63b7cf48525a19",
+    "selection.csv": "65261361c5527c13343478b2837342f70392da70b947bd87f467feb911df5f1a"
+  },
+  "primary_models_path": "models/paired_development.v1.json.gz",
+  "primary_models_sha256": "17afe566f936297ca8ddff084cc51f6378aa1b696ff346f31763069366f24047",
+  "limitations": [
+    "Source MLC positivity, not verified productive infection or cocktail efficacy.",
+    "Additive compositional pair baseline; no explicit host-phage mechanistic interaction.",
+    "Already inspected development source; no independent release validation, calibration or OOD claim."
+  ]
+}

@@ -12,9 +12,12 @@ The task, label evidence, generalization limits and acceptance criteria are in
 [`docs/first-model-task.md`](docs/first-model-task.md).
 
 Current delivery: a working file-based model boundary, a real-data label/genome
-audit and frozen host-feature development weights. The first host model did not
-meet the criterion for improving over per-phage prevalence; its outputs remain
-uncalibrated research scores. See [the study report](docs/host-baseline-results.md).
+audit, frozen host-feature weights and a completed additive host–phage benchmark.
+The first host model did not establish improvement over phage prevalence. The new
+4-mer pair baseline also did not meet its cold-phage improvement criterion across
+the prespecified sensitivities. Both remain uncalibrated research scores; see the
+[host study](docs/host-baseline-results.md) and
+[paired study](docs/paired-baseline-results.md).
 Pairwise matrices and offline union coverage do not establish cocktail efficacy.
 
 ## Repository layout
@@ -143,8 +146,10 @@ It audits sequence/label identity and duplicate-genome disagreements without
 training. [The follow-up source review and split freeze](docs/paired-split-freeze.md)
 now fixes 69 operational phage-neighbour groups for the primary scheme and all
 nine development split manifests. It traces source annotation differences without
-relabeling them. Paired fitting is still separate; the already inspected cohort
-cannot serve as independent release validation.
+relabeling them. The [completed fixed baseline study](docs/paired-baseline-results.md)
+runs host-only, phage-only and additive pair models, plus applicable comparators,
+under both weighting policies. Cold-phage gains remain inconclusive. The already
+inspected cohort cannot serve as independent release validation.
 
 ## Optional GenoPHI genome-aware reference
 
@@ -184,7 +189,7 @@ GenoPHI is pinned to version 1.0.3 and its demo data to commit
 - [ ] Reproduce GenoPHI demo metrics locally
 - [ ] Define target-specific label mapping before training mechanistic targets
 - [ ] Demonstrate improvement and validate calibration before model promotion
-- [ ] Evaluate generalization to unseen phages separately
+- [x] Evaluate unseen-phage regimes with frozen sequence groups and report inconclusive additive-baseline gains
 - [ ] Add repeated group evaluation and an independent release holdout
 
 ## Scope
